@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 public class BTree {
 	
 	private BTreeNode root;
@@ -10,20 +12,7 @@ public class BTree {
 		this.sequenceLenth = sequenceLenth;
 	}
 	
-	/**
-	 * Searches for the frequency of a given key value starting from the root. If the key is in a 
-	 * child of the root, subSearch is called to recursively 
-	 * look through all children until the key is found or is
-	 * not there.
-	 * @param The long key to be found
-	 * @return The 
-	 */
 	public long search(long key) {
-		int i = 1;
-		
-		while( i <= ) {
-			
-		}
 		//TODO
 	}
 	
@@ -32,48 +21,60 @@ public class BTree {
 	}
 	
 	public void insert(long key) {
-		if( root.getKeys().length == (2t-1) ) {		//root is full
-			BTreeNode newNode = new BTreeNode();	//create new child node
-			
-			
-		}
+		//TODO
+	}
+	
+	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) {
+		//TODO
+	}
+	
+	private void insertNonFull(BTreeNode parentNode, long key) {
+		//TODO
 	}
 	
 	private class BTreeNode {
 		
-		private list keys;			//array of keys for this node
-		private list children;		//array of children for this node
-		private boolean isLeaf;		//boolean to keep track of this node being a leaf
+		private LinkedList keys;			//array of keys for this node
+		private LinkedList children;		//array of children for this node
+		private boolean isLeaf;				//boolean to keep track of this node being a leaf
 		
 		/**
 		 * Constructor to create BTreeNode and initialize variables
 		 */
-		public BTreeNode(int t, boolean leafStatus) {
-			keys = new list();
-			children = new list();
-			isLeaf = leafStatus;
+		public BTreeNode() {
+			keys = new LinkedList<TreeObject>();
+			children = new LinkedList<TreeObject>();
+			isLeaf = true;
 		}
 		
 		/**
-		 * Returns the long array of keys
+		 * @return The list of keys
 		 */
-		public long[] getKeys() {
+		public LinkedList<TreeObject> getKeys() {
 			return keys;
 		}
 		
 		
 		/**
-		 * Returns the long array of children
+		 * @return The list of children
 		 */
-		public long[] getChildren() {
+		public LinkedList<TreeObject> getChildren() {
 			return children;
 		}
 		
 		/**
-		 * Returns true if this node is a leaf node, false otherwise
+		 * @return True if this node is a leaf node, false otherwise
 		 */
 		public boolean isLeaf() {
 			return isLeaf;
+		}
+		
+		/**
+		 * Sets the isLeaf boolean to true or false.
+		 * @param leafValue Boolean to set the leaf value to
+		 */
+		public void setLeaf(boolean leafValue) {
+			isLeaf = leafValue;
 		}
 	}
 } //End BTree
