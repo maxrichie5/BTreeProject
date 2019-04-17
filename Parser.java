@@ -102,32 +102,5 @@ public class Parser {
 		return GeneString.split("\\r?\\n");
 	}
 
-	/**
-	 * Converts the geneString to the binary representation
-	 * 
-	 * @param geneString
-	 *            GeneString to be converted
-	 * @return String of genes in binary representation
-	 */
-	public String convertGenes(String geneString) {
-		String bitGeneString = "";
-		for (int i = 0; i < geneString.length(); i++) {
-			switch (geneString.charAt(i)) {
-			case 'a':
-				bitGeneString += "00";
-				break;
-			case 'c':
-				bitGeneString += "01";
-				break;
-			case 'g':
-				bitGeneString += "10";
-				break;
-			case 't':
-				bitGeneString += "11";
-				break;
-			}
-		}
 
-		return bitGeneString;
-	}
 }
