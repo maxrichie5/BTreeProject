@@ -29,15 +29,51 @@ public class Parser {
 				if (line.contains("ORIGIN")) {
 					boolean geneBlock = true;
 					while (geneBlock) {
+						/* Found a gene block */
 						String newLine = scan.nextLine();
 						if (!newLine.contains("//")) {
-							GeneString += newLine.replaceAll("[^AaGgTtCc]", "");
-							// replaceAll makes sure that only the bases are added, if an n is found that is
-							// it not put into the string
+							if (newLine.contains("N") || newLine.contains("n")) {
+								/* N is in this new line, must move subseq to the last available spot */
+								boolean foundN = false;
+								int nSpot = 0;
+								for (int i = 0; i < newLine.length(); i++) {
+									if (!foundN) {
+										/* Searching for n */
+										if (newLine.charAt(i) == 'N' || newLine.charAt(i) == 'n') {
+											/* Found the n, update nSpot */
+											foundN = true;
+											nSpot = i;
+										} else {
+											if (Character.isLetter(newLine.charAt(i)))
+												GeneString += newLine.charAt(i);
+										}
+									}
+								}
+								if (foundN) {
+									/* An N was found in this line, must start new subseq after last N */
+									if (nSpot != 10)
+										/* At n at index 10 means that the first char of subseq is n */
+										GeneString += "\n";
+
+									for (int i = nSpot; i < newLine.length(); i++) {
+										if (newLine.charAt(i) != 'N' && newLine.charAt(i) != 'n'
+												&& newLine.charAt(i) != ' ') {
+											GeneString += newLine.charAt(i);
+										}
+									}
+								}
+							} else {
+								/*
+								 * No n in this line, just replace all non allowable chars and add to geneString
+								 */
+								GeneString += newLine.replaceAll("[^AaGgTtCc]", "");
+							}
 						} else {
 							geneBlock = false;
-							GeneString += "\n"; // If the file contains more than one gene block then they will be
-												// separated
+							GeneString += "\n"; /*
+												 * If the file contains more than one gene block then they will be
+												 * separated
+												 */
 						}
 					}
 				}
@@ -55,5 +91,43 @@ public class Parser {
 	 */
 	public String getGeneString() {
 		return GeneString;
+	}
+
+	/**
+	 * Splits the geneStrings into the correct Sub sequences
+	 * 
+	 * @return An array of String[] that has all the sub sequences
+	 */
+	public String[] getSubGeneStrings() {
+		return GeneString.split("\\r?\\n");
+	}
+
+	/**
+	 * Converts the geneString to the binary representation
+	 * 
+	 * @param geneString
+	 *            GeneString to be converted
+	 * @return String of genes in binary representation
+	 */
+	public String convertGenes(String geneString) {
+		String bitGeneString = "";
+		for (int i = 0; i < geneString.length(); i++) {
+			switch (geneString.charAt(i)) {
+			case 'a':
+				bitGeneString += "00";
+				break;
+			case 'c':
+				bitGeneString += "01";
+				break;
+			case 'g':
+				bitGeneString += "10";
+				break;
+			case 't':
+				bitGeneString += "11";
+				break;
+			}
+		}
+
+		return bitGeneString;
 	}
 }
