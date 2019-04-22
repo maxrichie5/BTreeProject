@@ -40,4 +40,11 @@ public class TreeObject {
 	public int getFreq() {
 		return freq;
 	}
+	/**
+	 * Returns the key of 
+	 * @return
+	 */
+	public long getKey() {
+		return key;
+	}
 }
