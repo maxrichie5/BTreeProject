@@ -55,6 +55,7 @@ public class GeneBankCreateBTree {
 		optimal -= pointerSize;
 		int dividedBy = ((2*totalSize)+(2*pointerSize));
 		optimal /= dividedBy;
+		degree = optimal;
 		
 	}
 	
