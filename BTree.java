@@ -134,50 +134,199 @@ public class BTree {
 		return copyNode;
 	}
 	
-	
+	/**
+	 * Creates a BTreeNode with keys, children, and other methods.
+	 * 
+	 * @author thomasreinking, maxrichmond
+	 *
+	 */
 	private class BTreeNode implements Serializable {
-		
-		private LinkedList keys;			//array of keys for this node
-		private LinkedList children;		//array of children for this node
-		private boolean isLeaf;				//boolean to keep track of this node being a leaf
-		
+
+		private LinkedList<TreeObject> keys; // array of keys for this node
+		private LinkedList<Integer> children; // array of children for this node
+		private boolean isLeaf; // boolean to keep track of this node being a leaf
+		private int numKeys; // number of keys in this node
+		private int parent; // index for parent
+
 		/**
 		 * Constructor to create BTreeNode and initialize variables
 		 */
 		public BTreeNode() {
 			keys = new LinkedList<TreeObject>();
-			children = new LinkedList<TreeObject>();
+			children = new LinkedList<Integer>();
 			isLeaf = true;
+			numKeys = 0;
+			parent = -1; // To indicate that it has no parent for now
 		}
-		
+
+		/**
+		 * 
+		 * @return Number of Keys in this BTreeNode
+		 */
+		public int getNumKeys() {
+			return numKeys;
+		}
+
+		/**
+		 * Sets the number of keys in this BTreeNode
+		 * 
+		 * @param numKeys
+		 */
+		public void setNumKeys(int numKeys) {
+			this.numKeys = numKeys;
+		}
+
+		/**
+		 * Gets the index of parent
+		 * 
+		 * @return Parent Index
+		 */
+		public int getParent() {
+			return parent;
+		}
+
+		/**
+		 * Sets the index of parent
+		 * 
+		 * @param parent
+		 */
+		public void setParent(int parent) {
+			this.parent = parent;
+		}
+
+		/**
+		 * Gets the key of TreeObject for that index
+		 * 
+		 * @param key
+		 *            Index of key
+		 * @return TreeObject of that index
+		 */
+		public TreeObject getKey(int key) {
+			return keys.get(key);
+		}
+
 		/**
 		 * @return The list of keys
 		 */
 		public LinkedList<TreeObject> getKeys() {
 			return keys;
 		}
-		
-		
+
+		/**
+		 * Removes the key at index
+		 * 
+		 * @param index
+		 *            Index of key to be removed
+		 * @return The removed TreeObject
+		 */
+		public TreeObject removeKey(int index) {
+			return keys.remove(index);
+		}
+
+		/**
+		 * Adds a key to the key list
+		 * 
+		 * @param key
+		 *            Element to be added
+		 */
+		public void addKey(TreeObject key) {
+			keys.add(key);
+		}
+
+		/**
+		 * Adds a key to the key list to given index
+		 * 
+		 * @param key
+		 *            Key to be added
+		 * @param index
+		 *            Index to be added to it
+		 */
+		public void addKey(TreeObject key, int index) {
+			keys.add(index, key);
+		}
+
+		/**
+		 * Adds a child to the list
+		 * 
+		 * @param child
+		 *            Child to be added
+		 */
+		public void addChild(int child) {
+			children.add(child);
+		}
+
+		/**
+		 * Adds a child to the given index
+		 * 
+		 * @param child
+		 *            Child to be add
+		 * @param index
+		 *            Index to add child at
+		 */
+		public void addChild(Integer child, int index) {
+			children.add(index, child);
+		}
+
+		/**
+		 * Gets the child of the given index
+		 * 
+		 * @param index
+		 *            Index of child
+		 * @return The value of the int at that index
+		 */
+		public int getChild(int index) {
+			return children.get(index).intValue();
+		}
+
+		/**
+		 * Removes the child at the index
+		 * 
+		 * @param index
+		 *            The index of child
+		 * @return The removed child value at that index
+		 */
+		public int removeChild(int index) {
+			return children.remove(index);
+		}
+
 		/**
 		 * @return The list of children
 		 */
-		public LinkedList<TreeObject> getChildren() {
+		public LinkedList<Integer> getChildren() {
 			return children;
 		}
-		
+
 		/**
 		 * @return True if this node is a leaf node, false otherwise
 		 */
 		public boolean isLeaf() {
 			return isLeaf;
 		}
-		
+
 		/**
 		 * Sets the isLeaf boolean to true or false.
-		 * @param leafValue Boolean to set the leaf value to
+		 * 
+		 * @param leafValue
+		 *            Boolean to set the leaf value to
 		 */
 		public void setLeaf(boolean leafValue) {
 			isLeaf = leafValue;
 		}
+		
+		
+		@Override
+		public String toString() {
+			String btnstr = "";
+			btnstr += "Keys: ";
+			for (int i = 0; i < keys.size(); i++) {
+				btnstr += keys.get(i) + " ";
+			}
+			btnstr += "\nChildren: ";
+			for (int i = 0; i < children.size(); i++) {
+				btnstr += children.get(i) + " ";
+			}
+			return btnstr;
+		}
+		
 	}
 } //End BTree
