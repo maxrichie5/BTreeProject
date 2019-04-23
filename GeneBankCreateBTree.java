@@ -1,3 +1,4 @@
+import java.io.File;
 
 public class GeneBankCreateBTree {
 
@@ -39,6 +40,8 @@ public class GeneBankCreateBTree {
 		if (degree == 0) {
 			// there should be a call to optimum degree -- this should maybe happen in a separate class
 		}
+		
+		createBTree();
 	
 	
 	}
@@ -57,6 +60,30 @@ public class GeneBankCreateBTree {
 		optimal /= dividedBy;
 		degree = optimal;
 		
+	}
+	
+	public static void createBTree() {
+		//Create file from gbk
+		File file = new File(gbkFile);
+		
+		//Parse the file
+		Parser parser = new Parser(file);
+		
+		//Get the string from the parser
+		String geneString = parser.getGeneString();
+		
+		//Create GeneConverter
+		GeneConverter gc = new GeneConverter();
+		
+		//Create BTree
+		BTree btree = new BTree(degree, sequenceLength);
+		
+		//Insert into btree
+		for(int i = 0; i < (geneString.length()-sequenceLength+1); i++) { //TODO Im not sure about when to stop
+			String subString = geneString.substring(i, sequenceLength); //Get string sequence
+			long key = gc.convertStringToLong(subString); //Convert string sequence to long
+			BTree.insert(key); //Insert the long key into the BTree
+		}
 	}
 	
 }
