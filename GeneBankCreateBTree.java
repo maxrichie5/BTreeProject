@@ -81,7 +81,7 @@ public class GeneBankCreateBTree {
 		//Insert into btree
 		for (String subString: geneString) {
 			for(int i = 0; i < (subString.length()-sequenceLength+1); i++) { //TODO Now it loops through all strings
-				String seqString = subString.substring(i, sequenceLength); //Get string sequence
+				String seqString = subString.substring(i, sequenceLength+i); //Get string sequence
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				BTree.insert(key); //Insert the long key into the BTree
 			}	
