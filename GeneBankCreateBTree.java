@@ -70,7 +70,7 @@ public class GeneBankCreateBTree {
 		Parser parser = new Parser(file);
 		
 		//Get the string from the parser
-		String geneString = parser.getGeneString();
+		String[] geneString = parser.getSubGeneStrings();
 		
 		//Create GeneConverter
 		GeneConverter gc = new GeneConverter();
@@ -79,10 +79,12 @@ public class GeneBankCreateBTree {
 		BTree btree = new BTree(degree, sequenceLength);
 		
 		//Insert into btree
-		for(int i = 0; i < (geneString.length()-sequenceLength+1); i++) { //TODO Im not sure about when to stop
-			String subString = geneString.substring(i, sequenceLength); //Get string sequence
-			long key = gc.convertStringToLong(subString); //Convert string sequence to long
-			BTree.insert(key); //Insert the long key into the BTree
+		for (String subString: geneString) {
+			for(int i = 0; i < (subString.length()-sequenceLength+1); i++) { //TODO Now it loops through all strings
+				String seqString = subString.substring(i, sequenceLength); //Get string sequence
+				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
+				BTree.insert(key); //Insert the long key into the BTree
+			}	
 		}
 	}
 	
