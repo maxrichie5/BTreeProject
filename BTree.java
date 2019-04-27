@@ -32,11 +32,53 @@ public class BTree {
 	}
 	
 	public void insert(long key) {
-		//TODO
+		int maxAllowedKeys = 2*(t)-1;
+		BTreeNode oldRoot = root;
+		
+		if(root.getNumKeys() == maxAllowedKeys) { //root node is full
+			BTreeNode newParent = new BTreeNode(); //create node to be parent of root after split
+			root = newParent; //make newParent the root
+			newParent.setLeaf(false); //will be the new root
+			newParent.getChildren().add(/*the previous root node*/);
+			split(newParent, 1, oldRoot);
+			insertNonFull(newParent, key);
+			
+		} else { //root node is not full
+			insertNonFull(oldRoot, key);
+		}
+		
 	}
 	
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) {
-		//TODO
+		BTreeNode newNode = new BTreeNode();
+		
+		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
+		
+		for(int j = 1; j <= (t-1); j++) { //half the full node's keys
+			newNode.addKey(child.getKey(j+t));
+		}
+		
+		if(!child.isLeaf()) { //if child is not a leaf
+			for(int j = 1; j <= t; j++) {
+				newNode.addChild(child.getChild(j+t), j);
+			}
+		}
+		
+		for(int j = parentNode.getNumKeys()+1; j >= 1; j--) {//reindex children
+			parentNode.addChild(parentNode.getChild(j), j+1);
+		}
+		parentNode.addChild(newNode.getOffset());
+		
+		for(int j = parentNode.getNumKeys(); j >= 1/*newNode*/; j--) { //reindex keys
+			parentNode.addKey(parentNode.getKey(j), j+1);
+		}
+		parentNode.addKey(child.getKey(t), i/*idk*/);
+		parentNode.setNumKeys(parentNode.getNumKeys()+1);
+		
+		diskWrite(parentNode, parentNode.getOffset());
+		diskWrite(child, child.getOffset());
+		diskWrite(newNode, newNode.getOffset());
+
 	}
 	
 	private void insertNonFull(BTreeNode parentNode, long key) {
@@ -147,6 +189,7 @@ public class BTree {
 		private boolean isLeaf; // boolean to keep track of this node being a leaf
 		private int numKeys; // number of keys in this node
 		private int parent; // index for parent
+		private int offset;
 
 		/**
 		 * Constructor to create BTreeNode and initialize variables
@@ -157,6 +200,7 @@ public class BTree {
 			isLeaf = true;
 			numKeys = 0;
 			parent = -1; // To indicate that it has no parent for now
+			offset = 0;
 		}
 
 		/**
@@ -311,6 +355,23 @@ public class BTree {
 		 */
 		public void setLeaf(boolean leafValue) {
 			isLeaf = leafValue;
+		}
+		
+		/**
+		 * Gets the offset.
+		 */
+		public int getOffset() {
+			return offset;
+		}
+		
+		/**
+		 * Sets the offset.
+		 * 
+		 * @param os
+		 *            the offset to set the node to.
+		 */
+		public void setOffset(int os) {
+			offset = os;
 		}
 		
 		
