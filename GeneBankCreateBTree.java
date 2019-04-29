@@ -7,7 +7,7 @@ public class GeneBankCreateBTree {
 	static private int degree = 0;
 	static private int sequenceLength = 0;
 	static private int cacheSizeCreate = 0;
-	static private int debugLevelCreate = 0;
+	static private int debug = 0;
 	static private int optimal = 4096;
 	
 	public static void main(String[] args) {
@@ -30,7 +30,7 @@ public class GeneBankCreateBTree {
 				cacheSizeCreate = Integer.valueOf(args[4]);	
 			}
 			if (args.length > 5) {
-				debugLevelCreate = Integer.valueOf(args[5]);	
+				debug = Integer.valueOf(args[5]);	
 				
 			}
 		}catch(Exception e) {
@@ -52,7 +52,7 @@ public class GeneBankCreateBTree {
 
 	}
 	
-	public static void optimumDegree(int totalSize, int pointerSize, int metadata) {
+	public static void optimalDegree(int totalSize, int pointerSize, int metadata) {
 		optimal -= metadata;
 		optimal += totalSize;
 		optimal -= pointerSize;
@@ -60,6 +60,14 @@ public class GeneBankCreateBTree {
 		optimal /= dividedBy;
 		degree = optimal;
 		
+	}
+	
+	public static int getDebug() {
+		return debug;
+	}
+	
+	public static int getDegree() {
+		return degree;
 	}
 	
 	public static void createBTree() {
