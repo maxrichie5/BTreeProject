@@ -8,33 +8,54 @@ import java.io.Serializable;
 import java.util.LinkedList;
 
 public class BTree {
-	
-	private BTreeNode root; //The root node in this BTree
+
+	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree
 	private int t; //The degree of keys for this BTree
 	private int sequenceLenth; //The number of genes per key in this BTree
-	
+
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 4096; //The largest expected size in bytes of a BTree Node
-	
+	private static int debugLevel = GeneBankCreateBTree.getDebug();
+	private static int degree = GeneBankCreateBTree.getDegree();
+
+
 	public BTree(int t, int sequenceLenth) {
 		root = new BTreeNode();
+		currentNode = new BTreeNode();
+		nextNode = new BTreeNode();
 		this.t = t;
 		this.sequenceLenth = sequenceLenth;
 	}
-	
+
 	public long search(long key) {
-		//TODO
+		while (true) {
+			int i = 0;
+			while (i < currentNode.keys.size() && key.compareTo(currentNode.keys.get(i).getKey()) > 0){
+				i++;
+			}
+
+			if (i < currentNode.keys.size() && key.compareTo(currentNode.keys.get(i).getKey()) == 0)
+			{
+				return currentNode.keys.get(i).getFreq();
+			}
+
+			if (currentNode.isLeaf()) {
+				return 0; // case where sequence is not found
+			} else {
+				currentNode = diskRead(currentNode.children.get(i));
+			}
+		}
 	}
-	
+
 	public long subSearch() {
 		//TODO
 	}
-	
+
 	public void insert(long key) {
 		int maxAllowedKeys = 2*(t)-1;
 		BTreeNode oldRoot = root;
-		
+
 		if(root.getNumKeys() == maxAllowedKeys) { //root node is full
 			BTreeNode newParent = new BTreeNode(); //create node to be parent of root after split
 			root = newParent; //make newParent the root
@@ -42,49 +63,118 @@ public class BTree {
 			newParent.getChildren().add(/*the previous root node*/);
 			split(newParent, 1, oldRoot);
 			insertNonFull(newParent, key);
-			
+
 		} else { //root node is not full
 			insertNonFull(oldRoot, key);
 		}
-		
+
 	}
-	
+
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) {
 		BTreeNode newNode = new BTreeNode();
-		
+
 		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
-		
+
 		for(int j = 1; j <= (t-1); j++) { //half the full node's keys
 			newNode.addKey(child.getKey(j+t));
 		}
-		
+
 		if(!child.isLeaf()) { //if child is not a leaf
 			for(int j = 1; j <= t; j++) {
 				newNode.addChild(child.getChild(j+t), j);
 			}
 		}
-		
+
 		for(int j = parentNode.getNumKeys()+1; j >= 1; j--) {//reindex children
 			parentNode.addChild(parentNode.getChild(j), j+1);
 		}
 		parentNode.addChild(newNode.getOffset());
-		
+
 		for(int j = parentNode.getNumKeys(); j >= 1/*newNode*/; j--) { //reindex keys
 			parentNode.addKey(parentNode.getKey(j), j+1);
 		}
 		parentNode.addKey(child.getKey(t), i/*idk*/);
 		parentNode.setNumKeys(parentNode.getNumKeys()+1);
-		
+
 		diskWrite(parentNode, parentNode.getOffset());
 		diskWrite(child, child.getOffset());
 		diskWrite(newNode, newNode.getOffset());
 
 	}
-	
+
 	private void insertNonFull(BTreeNode parentNode, long key) {
-		//TODO
+		currentNode = root;
+
+		while (true)
+		{
+			int index = currentNode.keys.size() - 1;
+			if (currentNode.isLeaf())
+			{
+				while (index >= 0 && key.compareTo(currentNode.keys.get(index).getKey()) <= 0)
+				{
+					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					{
+						currentNode.keys.get(index).increaseFreq();
+						diskWrite(currentNode, currentNode.getOffset());
+						if(debugLevel == 0)
+							System.err.println();
+						return;
+					}
+					index--;
+				}
+				currentNode.keys.add(index + 1, key);
+				if(debugLevel == 0)
+					System.err.println();
+
+				diskWrite(currentNode, currentNode.getOffset());
+				break;
+			}
+			else
+			{
+				while (index >= 0 && key.compareTo(currentNode.keys.get(index).getKey()) <= 0)
+				{
+					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					{
+						currentNode.keys.get(index).increaseFreq();
+						diskWrite(currentNode, currentNode.getOffset());
+
+						if(debugLevel == 0)
+							System.err.println();
+
+						return;
+					}
+					index--;
+				}
+				index++;
+				nextNode = diskRead(currentNode.children.get(index));
+				if (nextNode.isFull())
+				{
+					split(currentNode, index, nextNode);
+					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					{
+						currentNode.keys.get(index).increaseFreq();
+						diskWrite(currentNode, currentNode.getOffset());
+						if(debugLevel == 0)
+							System.err.println();
+
+						return;
+					} else if (key.compareTo(currentNode.keys.get(index).getKey()) > 0)
+						nextNode = diskRead(currentNode.children.get(index + 1));
+				}
+				currentNode = nextNode;
+			}
+		}
 	}
-	
+	/**
+	 * returns length of a long
+	 * @param l is the long you want the length of 
+	 * @return
+	 */
+	private static int getLongLength(long l) { 
+		String s = ""+l;
+		return s.length();
+	}
+
 	/**
 	 * Serializes the object by converting it into an array of bytes
 	 * @param node The BTreeNode to be serialized
@@ -94,23 +184,23 @@ public class BTree {
 	private static byte[] serialize(BTreeNode node) throws IOException {
 		//Array of bytes that store the given BTree Node as a sequence of bytes
 		byte[] stream = null;
-		
+
 		//Creates a ByteArrayOutputStream to be passed as a parameter to the ObjectOutputStream
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
+
 		//Creates an ObjectOutputStream
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		
+
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-		
+
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
-				
+
 		//Returns the given node as an array of bytes
 		return stream;
 	}
-	
+
 	/**
 	 * Deserializes an object by converting an array of bytes into a BTreeObject
 	 * @param byteArray The given BTreeNode as a byte array
@@ -121,14 +211,14 @@ public class BTree {
 	private static BTreeNode deserialize(byte[] byteArray) throws ClassNotFoundException, IOException {
 		//Creates a ByteArrayInputStream to make the given byte array readable
 		ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-		
+
 		//Creates an ObjectInputStream to read the ByteArrayInputStream
 		ObjectInputStream ois = new ObjectInputStream(bais);
-		
+
 		//Reads the given byteArray'd BTreeNode and converts it back into a BTreeNode
 		return (BTreeNode) ois.readObject();
 	}
-	
+
 	/**
 	 * Writes a BTreeNode into a Random Access File in binary
 	 * @param node The BTreeNode to be written
@@ -138,17 +228,17 @@ public class BTree {
 	public static void diskWrite(BTreeNode node, int position) throws IOException {
 		//Serializes the given BTreeNode
 		byte[] byteArray = serialize(node);
-		
+
 		//Finds the position in the RandomAccessFile to write to
 		raf.seek(position);
-		
+
 		//Writes the byte array to the RandomAccessFile
 		raf.write(byteArray);
-		
+
 		//Changes the RandomAccessFile offset position to the next length of the BTreeNode
 		rafOffset += maxBTreeNodeSize;
 	}
-	
+
 	/**
 	 * Reads the binary Random Access File and converts it into a BTreeNode
 	 * @param position
@@ -159,23 +249,23 @@ public class BTree {
 	public static BTreeNode diskRead(int position) throws ClassNotFoundException, IOException {
 		//Creates byte array to be read to
 		byte[] byteArray = new byte[maxBTreeNodeSize];
-		
+
 		//A BTreeNode place holder
 		BTreeNode copyNode = null;
-		
+
 		//Finds the starting postion in the RAF to start reading from
 		raf.seek(position);
-		
+
 		//Reads from the RAF into the byte array
 		raf.read(byteArray);
-		
+
 		//Deserializes the byte array into the node place holder
 		copyNode = deserialize(byteArray);
-		
+
 		//Returns the node place holder
 		return copyNode;
 	}
-	
+
 	/**
 	 * Creates a BTreeNode with keys, children, and other methods.
 	 * 
@@ -202,6 +292,16 @@ public class BTree {
 			parent = -1; // To indicate that it has no parent for now
 			offset = 0;
 		}
+
+		/**
+		 * check if node is full
+		 * 
+		 * @return
+		 */
+		public boolean isFull() {
+			return keys.size() == numKeys;
+		}
+
 
 		/**
 		 * 
@@ -356,14 +456,14 @@ public class BTree {
 		public void setLeaf(boolean leafValue) {
 			isLeaf = leafValue;
 		}
-		
+
 		/**
 		 * Gets the offset.
 		 */
 		public int getOffset() {
 			return offset;
 		}
-		
+
 		/**
 		 * Sets the offset.
 		 * 
@@ -373,8 +473,8 @@ public class BTree {
 		public void setOffset(int os) {
 			offset = os;
 		}
-		
-		
+
+
 		@Override
 		public String toString() {
 			String btnstr = "";
@@ -388,6 +488,6 @@ public class BTree {
 			}
 			return btnstr;
 		}
-		
+
 	}
 } //End BTree
