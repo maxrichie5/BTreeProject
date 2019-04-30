@@ -98,7 +98,8 @@ public class BTree {
 
 	}
 
-	private void insertNonFull(long key) {
+	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
+		Long key = to.getKey();
 		currentNode = root;
 
 		while (true)
@@ -118,7 +119,7 @@ public class BTree {
 					}
 					index--;
 				}
-				currentNode.keys.add(index + 1, key);
+				currentNode.keys.add(index + 1, to);
 				if(debugLevel == 0)
 					System.err.println();
 
