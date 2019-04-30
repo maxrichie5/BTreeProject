@@ -28,7 +28,7 @@ public class BTree {
 		this.sequenceLenth = sequenceLenth;
 	}
 
-	public long search(long key) {
+	public long search(long key) throws ClassNotFoundException, IOException {
 		while (true) {
 			int i = 0;
 			while (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) > 0){
@@ -41,18 +41,16 @@ public class BTree {
 			}
 
 			if (currentNode.isLeaf()) {
-				return 0; // case where sequence is not found
+				return 0;
 			} else {
 				currentNode = diskRead(currentNode.children.get(i));
 			}
 		}
 	}
 
-	public long subSearch() {
-		//TODO
-	}
-
-	public void insert(long key) {
+	public void insert(TreeObject to) {
+		Long key = to.getKey();
+		
 		int maxAllowedKeys = 2*(t)-1;
 		BTreeNode oldRoot = root;
 
@@ -62,10 +60,10 @@ public class BTree {
 			newParent.setLeaf(false); //will be the new root
 			newParent.getChildren().add(/*the previous root node*/);
 			split(newParent, 1, oldRoot);
-			insertNonFull(key);
+			insertNonFull(to);
 
 		} else { //root node is not full
-			insertNonFull(key);
+			insertNonFull(to);
 		}
 
 	}
@@ -105,7 +103,8 @@ public class BTree {
 
 	}
 
-	private void insertNonFull(long key) {
+	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
+		Long key = to.getKey();
 		currentNode = root;
 
 		while (true)
@@ -125,7 +124,7 @@ public class BTree {
 					}
 					index--;
 				}
-				currentNode.keys.add(index + 1, key);
+				currentNode.keys.add(index + 1, to);
 				if(debugLevel == 0)
 					System.err.println();
 
