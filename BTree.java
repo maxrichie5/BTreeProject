@@ -28,7 +28,7 @@ public class BTree {
 		this.sequenceLenth = sequenceLenth;
 	}
 
-	public long search(long key) {
+	public long search(long key) throws ClassNotFoundException, IOException {
 		while (true) {
 			int i = 0;
 			while (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) > 0){
