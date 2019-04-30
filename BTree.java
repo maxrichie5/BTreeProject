@@ -75,16 +75,19 @@ public class BTree {
 
 		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
 
-		for(int j = 1; j <= (t-1); j++) { //half the full node's keys
-			newNode.addKey(child.getKey(j+t));
+		for(int j = 0; j < (t-1); j++) { //half the full node's keys
+			newNode.addKey(child.getKey(j+t-1));
+			child.getKeys().remove(j+t-1);
 		}
 
 		if(!child.isLeaf()) { //if child is not a leaf
-			for(int j = 1; j <= t; j++) {
+			for(int j = 0; j < t-1; j++) {
 				newNode.addChild(child.getChild(j+t), j);
+				child.getChildren().remove(j+t);
 			}
 		}
 
+		parentNode.setNumKeys(t-1); //set the parent node's keys to t-1
 		for(int j = parentNode.getNumKeys()+1; j >= 1; j--) {//reindex children
 			parentNode.addChild(parentNode.getChild(j), j+1);
 		}
