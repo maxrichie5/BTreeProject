@@ -52,13 +52,13 @@ public class GeneBankCreateBTree {
 
 	}
 	
-	public static void optimalDegree(int totalSize, int pointerSize, int metadata) {
+	public static int getOptimalDegree(int totalSize, int pointerSize, int metadata) {
 		optimal -= metadata;
 		optimal += totalSize;
 		optimal -= pointerSize;
 		int dividedBy = ((2*totalSize)+(2*pointerSize));
 		optimal /= dividedBy;
-		degree = optimal;
+		return optimal;
 		
 	}
 	

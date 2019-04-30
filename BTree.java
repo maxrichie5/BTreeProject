@@ -10,22 +10,29 @@ import java.util.LinkedList;
 public class BTree {
 
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree
-	private int t; //The degree of keys for this BTree
 	private int sequenceLenth; //The number of genes per key in this BTree
 
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 4096; //The largest expected size in bytes of a BTree Node
-	private static int debugLevel = GeneBankCreateBTree.getDebug();
-	private static int degree = GeneBankCreateBTree.getDegree();
+	private static int debugLevel;
+	private static int degree;
+	private static int nodeCount;
+	private static int cacheSize;
 
 
-	public BTree(int t, int sequenceLenth) {
-		root = new BTreeNode();
+	public BTree(int totalSize, int pointerSize, int metadata, int sequenceLenth, int cacheSize, int degree, int debugLevel) {
+		if (degree == 0) {
+			degree = GeneBankCreateBTree.getOptimalDegree();
+		} else {
+			this.degree = degree;
+		}
+		this.debugLevel = debugLevel;
+		root = new BTreeNode(degree, true, true, 0);
 		currentNode = new BTreeNode();
 		nextNode = new BTreeNode();
-		this.t = t;
 		this.sequenceLenth = sequenceLenth;
+		nodeCount = 1;
 	}
 
 	public long search(long key) throws ClassNotFoundException, IOException {
@@ -48,19 +55,22 @@ public class BTree {
 		}
 	}
 
-	public void insert(TreeObject to) {
+	public void insert(TreeObject to) throws ClassNotFoundException, IOException {
 		Long key = to.getKey();
-		
-		int maxAllowedKeys = 2*(t)-1;
+
+		int maxAllowedKeys = degree;
 		BTreeNode oldRoot = root;
 
-		if(root.getNumKeys() == maxAllowedKeys) { //root node is full
-			BTreeNode newParent = new BTreeNode(); //create node to be parent of root after split
-			root = newParent; //make newParent the root
-			newParent.setLeaf(false); //will be the new root
-			newParent.getChildren().add(/*the previous root node*/);
-			split(newParent, 1, oldRoot);
-			insertNonFull(to);
+		if(root.isFull()) { //root node is full
+			nextNode = root; //create node to be parent of root after split
+			root = new BTreeNode(degree, false, true, nodeCount+1); //make newParent the root
+			nodeCount++;
+			root.children.add(0, nextNode.getIndex());
+			nextNode.setParentIndex(root.getIndex());
+			nextNode.setRoot(false);
+			
+			
+			split(root, 0, nextNode); /*pls explain what OLDROOT is i am confused so i changed it*/
 
 		} else { //root node is not full
 			insertNonFull(to);
@@ -69,17 +79,16 @@ public class BTree {
 	}
 
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) {
-		BTreeNode newNode = new BTreeNode();
+		BTreeNode newNode = new BTreeNode(degree, false, child.isLeaf(), nodeCount);
+		nodeCount++;		
 
-		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
-
-		for(int j = 1; j <= (t-1); j++) { //half the full node's keys
-			newNode.addKey(child.getKey(j+t));
+		for(int j = 1; j <= (degree-1); j++) { //half the full node's keys
+			newNode.addKey(child.getKey(j+degree));
 		}
 
 		if(!child.isLeaf()) { //if child is not a leaf
-			for(int j = 1; j <= t; j++) {
-				newNode.addChild(child.getChild(j+t), j);
+			for(int j = 1; j <= degree; j++) {
+				newNode.addChild(child.getChild(j+degree), j);
 			}
 		}
 
@@ -91,7 +100,7 @@ public class BTree {
 		for(int j = parentNode.getNumKeys(); j >= 1/*newNode*/; j--) { //reindex keys
 			parentNode.addKey(parentNode.getKey(j), j+1);
 		}
-		parentNode.addKey(child.getKey(t), i/*idk*/);
+		parentNode.addKey(child.getKey(degree), i/*idk*/);
 		parentNode.setNumKeys(parentNode.getNumKeys()+1);
 
 		diskWrite(parentNode, parentNode.getOffset());
@@ -275,20 +284,31 @@ public class BTree {
 
 		private LinkedList<TreeObject> keys; // array of keys for this node
 		private LinkedList<Integer> children; // array of children for this node
-		private boolean isLeaf; // boolean to keep track of this node being a leaf
+		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
-		private int parent; // index for parent
-		private int offset;
+		private int parentIndex, index; // index for parent and this node
+		private int offset; //
+		private int degree; // b tree degree
+		/*please explain offset above ^^*/
 
 		/**
 		 * Constructor to create BTreeNode and initialize variables
 		 */
-		public BTreeNode() {
+		public BTreeNode(int degree, boolean isRoot, boolean isLeaf, int index) {
 			keys = new LinkedList<TreeObject>();
 			children = new LinkedList<Integer>();
-			isLeaf = true;
+			
+			this.degree = degree;
+			this.isRoot = isRoot;
+			this.isLeaf = isLeaf;
+			this.index = index;
+			
 			numKeys = 0;
-			parent = -1; // To indicate that it has no parent for now
+			
+			if (isRoot) {
+				parentIndex = -1; // To indicate that it has no parent for now
+			}
+			
 			offset = 0;
 		}
 
@@ -324,8 +344,8 @@ public class BTree {
 		 * 
 		 * @return Parent Index
 		 */
-		public int getParent() {
-			return parent;
+		public int getParentIndex() {
+			return parentIndex;
 		}
 
 		/**
@@ -333,8 +353,27 @@ public class BTree {
 		 * 
 		 * @param parent
 		 */
-		public void setParent(int parent) {
-			this.parent = parent;
+		public void setParentIndex(int parentIndex) {
+			this.parentIndex = parentIndex;
+		}
+		
+
+		/**
+		 * Gets the index of node
+		 * 
+		 * @return Parent Index
+		 */
+		public int getIndex() {
+			return index;
+		}
+
+		/**
+		 * Sets the index of node
+		 * 
+		 * @param parent
+		 */
+		public void setIndex(int index) {
+			this.index = index;
 		}
 
 		/**
@@ -444,6 +483,23 @@ public class BTree {
 		 */
 		public boolean isLeaf() {
 			return isLeaf;
+		}
+		
+		/**
+		 * @return True if this node is a root node, false otherwise
+		 */
+		public boolean isRoot() {
+			return isRoot;
+		}
+		
+		/**
+		 * Sets the isRoot boolean to true or false.
+		 * 
+		 * @param leafValue
+		 *            Boolean to set the leaf value to
+		 */
+		public void setRoot(boolean isRoot) {
+			this.isRoot = isRoot;
 		}
 
 		/**
