@@ -48,7 +48,9 @@ public class BTree {
 		}
 	}
 
-	public void insert(long key) {
+	public void insert(TreeObject to) {
+		Long key = to.getKey();
+		
 		int maxAllowedKeys = 2*(t)-1;
 		BTreeNode oldRoot = root;
 
@@ -58,10 +60,10 @@ public class BTree {
 			newParent.setLeaf(false); //will be the new root
 			newParent.getChildren().add(/*the previous root node*/);
 			split(newParent, 1, oldRoot);
-			insertNonFull(key);
+			insertNonFull(to);
 
 		} else { //root node is not full
-			insertNonFull(key);
+			insertNonFull(to);
 		}
 
 	}
