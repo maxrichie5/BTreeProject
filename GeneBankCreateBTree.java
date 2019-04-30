@@ -88,7 +88,7 @@ public class GeneBankCreateBTree {
 		GeneConverter gc = new GeneConverter();
 		
 		//Create BTree
-		BTree btree = new BTree(degree, sequenceLength);
+		BTree btree = new BTree(degree, sequenceLength); // change
 		
 		//Insert into btree
 		for (String subString: geneString) {
