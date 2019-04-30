@@ -62,10 +62,10 @@ public class BTree {
 			newParent.setLeaf(false); //will be the new root
 			newParent.getChildren().add(/*the previous root node*/);
 			split(newParent, 1, oldRoot);
-			insertNonFull(newParent, key);
+			insertNonFull(key);
 
 		} else { //root node is not full
-			insertNonFull(oldRoot, key);
+			insertNonFull(key);
 		}
 
 	}
@@ -102,7 +102,7 @@ public class BTree {
 
 	}
 
-	private void insertNonFull(BTreeNode parentNode, long key) {
+	private void insertNonFull(long key) {
 		currentNode = root;
 
 		while (true)
