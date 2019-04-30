@@ -41,15 +41,11 @@ public class BTree {
 			}
 
 			if (currentNode.isLeaf()) {
-				return 0; // case where sequence is not found
+				return 0;
 			} else {
 				currentNode = diskRead(currentNode.children.get(i));
 			}
 		}
-	}
-
-	public long subSearch() {
-		//TODO
 	}
 
 	public void insert(long key) {
