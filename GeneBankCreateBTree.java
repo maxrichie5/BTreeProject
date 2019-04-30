@@ -10,6 +10,11 @@ public class GeneBankCreateBTree {
 	static private int debug = 0;
 	static private int optimal = 4096;
 	
+	/** THESE VALUES NEED TO BE UPDATED!!! OR IT WILL NOT WORK!!!! */
+	static private int totalSize;
+	static private int pointerSize;
+	static private int metaData;
+	
 	public static void main(String[] args) {
 
 		
@@ -52,14 +57,13 @@ public class GeneBankCreateBTree {
 
 	}
 	
-	public static int getOptimalDegree(int totalSize, int pointerSize, int metadata) {
-		optimal -= metadata;
+	public static int getOptimalDegree() {
+		optimal -= metaData;
 		optimal += totalSize;
 		optimal -= pointerSize;
 		int dividedBy = ((2*totalSize)+(2*pointerSize));
 		optimal /= dividedBy;
 		return optimal;
-		
 	}
 	
 	public static int getDebug() {
