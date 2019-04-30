@@ -31,11 +31,11 @@ public class BTree {
 	public long search(long key) {
 		while (true) {
 			int i = 0;
-			while (i < currentNode.keys.size() && key.compareTo(currentNode.keys.get(i).getKey()) > 0){
+			while (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) > 0){
 				i++;
 			}
 
-			if (i < currentNode.keys.size() && key.compareTo(currentNode.keys.get(i).getKey()) == 0)
+			if (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) == 0)
 			{
 				return currentNode.keys.get(i).getFreq();
 			}
@@ -110,9 +110,9 @@ public class BTree {
 			int index = currentNode.keys.size() - 1;
 			if (currentNode.isLeaf())
 			{
-				while (index >= 0 && key.compareTo(currentNode.keys.get(index).getKey()) <= 0)
+				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				{
-					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -131,9 +131,9 @@ public class BTree {
 			}
 			else
 			{
-				while (index >= 0 && key.compareTo(currentNode.keys.get(index).getKey()) <= 0)
+				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				{
-					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -150,7 +150,7 @@ public class BTree {
 				if (nextNode.isFull())
 				{
 					split(currentNode, index, nextNode);
-					if (key.compareTo(currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -158,7 +158,7 @@ public class BTree {
 							System.err.println();
 
 						return;
-					} else if (key.compareTo(currentNode.keys.get(index).getKey()) > 0)
+					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0)
 						nextNode = diskRead(currentNode.children.get(index + 1));
 				}
 				currentNode = nextNode;
