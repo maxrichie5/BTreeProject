@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 
 public class GeneBankCreateBTree {
 
@@ -41,7 +42,13 @@ public class GeneBankCreateBTree {
 			// there should be a call to optimum degree -- this should maybe happen in a separate class
 		}
 		
-		createBTree();
+		try {
+			createBTree();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	
 	
 	}
@@ -70,7 +77,7 @@ public class GeneBankCreateBTree {
 		return degree;
 	}
 	
-	public static void createBTree() {
+	public static void createBTree() throws ClassNotFoundException, IOException {
 		//Create file from gbk
 		File file = new File(gbkFile);
 		
@@ -84,14 +91,15 @@ public class GeneBankCreateBTree {
 		GeneConverter gc = new GeneConverter();
 		
 		//Create BTree
-		BTree btree = new BTree(degree, sequenceLength);
+		BTree btree = new BTree(sequenceLength);
 		
 		//Insert into btree
 		for (String subString: geneString) {
 			for(int i = 0; i < (subString.length()-sequenceLength+1); i++) { //TODO Now it loops through all strings
 				String seqString = subString.substring(i, sequenceLength+i); //Get string sequence
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
-				BTree.insert(key); //Insert the long key into the BTree
+				TreeObject to = new TreeObject(key);
+				btree.insert(to); //Insert the long key into the BTree
 			}	
 		}
 	}
