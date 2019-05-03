@@ -11,6 +11,11 @@ public class GeneBankCreateBTree {
 	static private int debug = 0;
 	static private int optimal = 4096;
 	
+	/** THESE VALUES NEED TO BE UPDATED!!! OR IT WILL NOT WORK!!!! */
+	static private int totalSize;
+	static private int pointerSize;
+	static private int metaData;
+	
 	public static void main(String[] args) {
 
 		
@@ -59,14 +64,13 @@ public class GeneBankCreateBTree {
 
 	}
 	
-	public static void optimalDegree(int totalSize, int pointerSize, int metadata) {
-		optimal -= metadata;
+	public static int getOptimalDegree() {
+		optimal -= metaData;
 		optimal += totalSize;
 		optimal -= pointerSize;
 		int dividedBy = ((2*totalSize)+(2*pointerSize));
 		optimal /= dividedBy;
-		degree = optimal;
-		
+		return optimal;
 	}
 	
 	public static int getDebug() {
@@ -91,7 +95,7 @@ public class GeneBankCreateBTree {
 		GeneConverter gc = new GeneConverter();
 		
 		//Create BTree
-		BTree btree = new BTree(sequenceLength);
+		BTree btree = new BTree(degree, sequenceLength); // change
 		
 		//Insert into btree
 		for (String subString: geneString) {

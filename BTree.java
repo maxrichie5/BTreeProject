@@ -9,21 +9,23 @@ import java.util.LinkedList;
 
 public class BTree {
 
-	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree
-	private int sequenceLenth; //The number of genes per key in this BTree
-	private long fileOffset = 0; //The current end of the BTree byte file, only increased when a new node is made
-
+	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree     
+	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 6000; //The largest expected size in bytes of a BTree Node
-	private static int debugLevel = GeneBankCreateBTree.getDebug();
-	private static int degree = GeneBankCreateBTree.getDegree();
 
+	public BTree(int sequenceLenth, int cacheSize, int degree, int debugLevel) {
+		if (degree == 0) {
+			degree = GeneBankCreateBTree.getOptimalDegree();
+		} else {
+			this.degree = degree;
+		}
+		this.debugLevel = debugLevel;
+		this.sequenceLength = sequenceLength;
+		nodeCount = 1;
 
-	public BTree(int sequenceLenth) {
-		root = new BTreeNode(0);
-		fileOffset += maxBTreeNodeSize;
-		this.sequenceLenth = sequenceLenth;
+		root = new BTreeNode(degree, true, true, 0);
 	}
 
 	public long search(long key) throws ClassNotFoundException, IOException {
@@ -47,20 +49,15 @@ public class BTree {
 	}
 
 	public void insert(TreeObject to) throws ClassNotFoundException, IOException {
-		Long key = to.getKey();
-		
-		int maxAllowedKeys = 2*(degree)-1;
-		BTreeNode oldRoot = root;
+		if(root.isFull()) { //root node is full
+			nextNode = root; //create node to be parent of root after split
+			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
+			root.children.add(0, nextNode.getIndex());
+			nextNode.setParentIndex(root.getIndex());
+			nextNode.setRoot(false);
 
-		if(root.getNumKeys() == maxAllowedKeys) { //root node is full
-			BTreeNode newParent = new BTreeNode(fileOffset); //create node to be parent of root after split
-			fileOffset += maxBTreeNodeSize;
-			
-			root = newParent; //make newParent the root
-			newParent.setLeaf(false); //will be the new root
-			newParent.getChildren().add(oldRoot.getOffset());
-			split(newParent, 1, oldRoot);
-			insertNonFull(to);
+
+			split(root, 0, nextNode); /*pls explain what OLDROOT is i am confused so i changed it*/
 
 		} else { //root node is not full
 			insertNonFull(to);
@@ -69,8 +66,7 @@ public class BTree {
 	}
 
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) throws IOException {
-		BTreeNode newNode = new BTreeNode(fileOffset);
-		fileOffset += maxBTreeNodeSize;
+		BTreeNode newNode = new BTreeNode(degree, false, false, ++nodeCount);
 
 		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
 
@@ -86,7 +82,7 @@ public class BTree {
 				child.getChildren().remove(degree);
 			}
 		}
-		
+
 		int i = 0;
 		int lastChildIndex = child.getNumKeys()-1;
 		while(i < parentNode.getNumKeys()) { //find where to place key that gets shifted up
@@ -103,9 +99,9 @@ public class BTree {
 			}
 			i++;
 		}
-		
+
 		parentNode.addChild(newNode.getOffset(), i+1); //add newNode after child in parent's list of children
-		
+
 		//set number of keys
 		parentNode.setNumKeys(parentNode.getNumKeys()+1);
 		child.setNumKeys(child.getKeys().size());
@@ -115,7 +111,6 @@ public class BTree {
 		diskWrite(parentNode, parentNode.getOffset());
 		diskWrite(child, child.getOffset());
 		diskWrite(newNode, newNode.getOffset());
-
 	}
 
 	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
@@ -125,11 +120,11 @@ public class BTree {
 		while (true)
 		{
 			int index = currentNode.keys.size() - 1;
-			if (currentNode.isLeaf()) //current node is leaf
+			if (currentNode.isLeaf())
 			{
 				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				{
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0) //if duplicate sequence
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -146,11 +141,11 @@ public class BTree {
 				diskWrite(currentNode, currentNode.getOffset());
 				break;
 			}
-			else //current node is not a leaf
+			else
 			{
-				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0) //while there's a key left and key given < current key
+				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				{
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0) //if duplicate
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -163,11 +158,11 @@ public class BTree {
 					index--;
 				}
 				index++;
-				nextNode = diskRead(currentNode.children.get(index)); //read in the next node in tree
-				if (nextNode.isFull()) //if the next node is full
+				nextNode = diskRead(currentNode.children.get(index));
+				if (nextNode.isFull())
 				{
-					split(currentNode, index, nextNode); //split the node
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0) //if duplicate
+					split(currentNode, index, nextNode);
+					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
 						diskWrite(currentNode, currentNode.getOffset());
@@ -175,14 +170,14 @@ public class BTree {
 							System.err.println();
 
 						return;
-					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0) //if key > all current keys, read next node
+					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0)
 						nextNode = diskRead(currentNode.children.get(index + 1));
 				}
 				currentNode = nextNode;
 			}
 		}
 	}
-	
+
 	/**
 	 * returns length of a long
 	 * @param l is the long you want the length of 
@@ -294,21 +289,33 @@ public class BTree {
 
 		private LinkedList<TreeObject> keys; // array of keys for this node
 		private LinkedList<Integer> children; // array of children for this node
-		private boolean isLeaf; // boolean to keep track of this node being a leaf
+		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
-		private int parent; // index for parent
-		private long offset; //this node's location in binary file
+		private int parentIndex, index; // index for parent and this node
+		private int offset; //
+		private int degree; // b tree degree
+		/*please explain offset above ^^*/
 
 		/**
 		 * Constructor to create BTreeNode and initialize variables
 		 */
-		public BTreeNode(long offset) {
+		public BTreeNode(int degree, boolean isRoot, boolean isLeaf, int index) {
 			keys = new LinkedList<TreeObject>();
 			children = new LinkedList<Integer>();
-			isLeaf = true;
-			numKeys = 0;
-			parent = -1; // To indicate that it has no parent for now
+
+			this.degree = degree;
+			this.isRoot = isRoot;
+			this.isLeaf = isLeaf;
+			this.index = index;
 			this.offset = offset;
+
+			numKeys = 0;
+
+			if (isRoot()) {
+				parentIndex = -1; // To indicate that it has no parent for now
+			}
+
+			offset = 0;
 		}
 
 		/**
@@ -343,8 +350,8 @@ public class BTree {
 		 * 
 		 * @return Parent Index
 		 */
-		public int getParent() {
-			return parent;
+		public int getParentIndex() {
+			return parentIndex;
 		}
 
 		/**
@@ -352,8 +359,27 @@ public class BTree {
 		 * 
 		 * @param parent
 		 */
-		public void setParent(int parent) {
-			this.parent = parent;
+		public void setParentIndex(int parentIndex) {
+			this.parentIndex = parentIndex;
+		}
+
+
+		/**
+		 * Gets the index of node
+		 * 
+		 * @return Parent Index
+		 */
+		public int getIndex() {
+			return index;
+		}
+
+		/**
+		 * Sets the index of node
+		 * 
+		 * @param parent
+		 */
+		public void setIndex(int index) {
+			this.index = index;
 		}
 
 		/**
@@ -466,6 +492,23 @@ public class BTree {
 		}
 
 		/**
+		 * @return True if this node is a root node, false otherwise
+		 */
+		public boolean isRoot() {
+			return isRoot;
+		}
+
+		/**
+		 * Sets the isRoot boolean to true or false.
+		 * 
+		 * @param leafValue
+		 *            Boolean to set the leaf value to
+		 */
+		public void setRoot(boolean isRoot) {
+			this.isRoot = isRoot;
+		}
+
+		/**
 		 * Sets the isLeaf boolean to true or false.
 		 * 
 		 * @param leafValue
@@ -479,7 +522,7 @@ public class BTree {
 		 * Gets the offset.
 		 */
 		public int getOffset() {
-			return (int) offset;
+			return (maxBTreeNodeSize * index);
 		}
 
 		/**
