@@ -1,5 +1,7 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,7 +17,7 @@ public class BTree {
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 6000; //The largest expected size in bytes of a BTree Node
 
-	public BTree(int sequenceLenth, int cacheSize, int degree, int debugLevel) {
+	public BTree(int sequenceLenth, int cacheSize, int degree, int debugLevel, String gbkFileName) {
 		if (degree == 0) {
 			degree = GeneBankCreateBTree.getOptimalDegree();
 		} else {
@@ -24,6 +26,21 @@ public class BTree {
 		this.debugLevel = debugLevel;
 		this.sequenceLength = sequenceLength;
 		nodeCount = 1;
+		
+		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+degree;
+		File file = new File(btreeFileName);
+		if(!file.exists()) { 
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		try {
+			raf = new RandomAccessFile("btreeFileName", "rw");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 
 		root = new BTreeNode(degree, true, true, 0);
 	}
