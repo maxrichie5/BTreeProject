@@ -362,7 +362,7 @@ public class BTree {
 		 * @return
 		 */
 		public boolean isFull() {
-			return keys.size() == numKeys;
+			return keys.size() == ((2*degree)-1);
 		}
 
 
