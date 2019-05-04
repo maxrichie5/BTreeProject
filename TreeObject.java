@@ -5,7 +5,7 @@ import java.io.Serializable;
  * @author thomasreinking
  *
  */
-public class TreeObject implements Serializable{
+public class TreeObject implements Serializable {
 	 
 	private int freq;
 	private long key;
