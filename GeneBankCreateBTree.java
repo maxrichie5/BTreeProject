@@ -9,12 +9,6 @@ public class GeneBankCreateBTree {
 	static private int sequenceLength = 0;
 	static private int cacheSizeCreate = 0;
 	static private int debug = 0;
-	static private int optimal = 4096;
-	
-	/** THESE VALUES NEED TO BE UPDATED!!! OR IT WILL NOT WORK!!!! */
-	static private int totalSize;
-	static private int pointerSize;
-	static private int metaData;
 	
 	public static void main(String[] args) {
 
@@ -62,15 +56,6 @@ public class GeneBankCreateBTree {
 		System.out.println( "CL arguments: <0/1(no/with Cache> <degree> <gbk file> <sequence length> [<cache size>] [<debug level>]");
 		System.exit(0);
 
-	}
-	
-	public static int getOptimalDegree() {
-		optimal -= metaData;
-		optimal += totalSize;
-		optimal -= pointerSize;
-		int dividedBy = ((2*totalSize)+(2*pointerSize));
-		optimal /= dividedBy;
-		return optimal;
 	}
 	
 	public static int getDebug() {
