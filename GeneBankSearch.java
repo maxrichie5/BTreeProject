@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 
 public class GeneBankSearch {
@@ -36,7 +37,13 @@ static private Boolean cacheSearch = false;
 			}
 		}
 		
-		search();
+		try {
+			search();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static void correctOutput() {
@@ -45,10 +52,33 @@ static private Boolean cacheSearch = false;
 	}
 	
 	private static void search() throws ClassNotFoundException, IOException {
-		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
+		//Create file from query file
+		File file = new File(queryFile);
+		
+		//Parse the file
+		QueryParser parser = new QueryParser(file);
+		
+		//Get the string from the parser
+		String[] geneStringArray = parser.getGeneStringArray();
+		
+		//Create GeneConverter
 		GeneConverter gc = new GeneConverter();
-		long key = gc.convertStringToLong(queryFile);
-		bt.search(key);
+		
+		//Create BTree
+		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
+		
+		//search btree
+		for (String queryString: geneStringArray) {
+			long key = gc.convertStringToLong(queryString);
+			int frequency = bt.search(key);
+			
+			if(debugLevelSearch == 1) { //make query dump
+				//TODO
+			} else { //print query result to stdout
+				System.out.println(queryString+": "+frequency);
+			}
+		}		
+		
 	}
 
 }

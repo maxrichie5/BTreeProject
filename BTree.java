@@ -68,7 +68,7 @@ public class BTree {
 		diskWrite(root, root.getOffset());
 	}
 
-	public long search(long key) throws ClassNotFoundException, IOException {
+	public int search(long key) throws ClassNotFoundException, IOException {
 		while (true) {
 			int i = 0;
 			while (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) > 0){
