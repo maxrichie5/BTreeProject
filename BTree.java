@@ -25,6 +25,7 @@ public class BTree {
 		}
 		this.debugLevel = debugLevel;
 		this.sequenceLength = sequenceLength;
+		this.cacheSize = cacheSize;
 		nodeCount = 1;
 		
 		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+degree;
@@ -43,6 +44,28 @@ public class BTree {
 		}
 
 		root = new BTreeNode(degree, true, true, 0);
+	}
+	
+	public BTree(String btreeFileName, int debugLevel, int cacheSize) throws ClassNotFoundException, IOException {
+		String[] sa = btreeFileName.split("."); //split the file name by .'s
+		degree = Integer.parseInt(sa[5]); //get degree
+		sequenceLength = Integer.parseInt(sa[4]); //get sequenceLength
+		
+		this.debugLevel = debugLevel;
+		this.cacheSize = cacheSize;
+		
+		File file = new File(btreeFileName);
+		try {
+			raf = new RandomAccessFile("btreeFileName", "rw");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		root = diskRead(0);
+	}
+	
+	public void finish() throws IOException {
+		diskWrite(root, root.getOffset());
 	}
 
 	public long search(long key) throws ClassNotFoundException, IOException {

@@ -106,6 +106,7 @@ public class GeneBankCreateBTree {
 				btree.insert(to); //Insert the long key into the BTree
 			}	
 		}
+		btree.finish(); //tells btree you are done using it and write root node
 	}
 	
 }

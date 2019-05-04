@@ -1,3 +1,4 @@
+import java.io.IOException;
 
 public class GeneBankSearch {
 
@@ -34,11 +35,20 @@ static private Boolean cacheSearch = false;
 				correctOutput();				
 			}
 		}
+		
+		search();
 	}
 	
-	public static void correctOutput() {
+	private static void correctOutput() {
 		System.out.println( "CL arguments: <0/1(no/with Cache> <btree file> <query file> [<cache size>] [<debug level>]");
 		System.exit(0);
+	}
+	
+	private static void search() throws ClassNotFoundException, IOException {
+		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
+		GeneConverter gc = new GeneConverter();
+		long key = gc.convertStringToLong(queryFile);
+		bt.search(key);
 	}
 
 }
