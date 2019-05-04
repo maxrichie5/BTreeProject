@@ -175,6 +175,7 @@ public class BTree {
 					index--;
 				}
 				currentNode.keys.add(index + 1, to);
+				currentNode.setNumKeys(currentNode.getNumKeys()+1);
 				if(debugLevel == 0)
 					System.err.println();
 
