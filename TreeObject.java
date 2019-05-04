@@ -1,9 +1,11 @@
+import java.io.Serializable;
+
 /**
  * Creates the tree object that contains the key and freq
  * @author thomasreinking
  *
  */
-public class TreeObject {
+public class TreeObject implements Serializable {
 	 
 	private int freq;
 	private long key;
