@@ -17,7 +17,7 @@ public class BTree {
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 6000; //The largest expected size in bytes of a BTree Node
 
-	public BTree(int sequenceLenth, int cacheSize, int degree, int debugLevel, String gbkFileName) {
+	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) {
 		if (degree == 0) {
 			degree = GeneBankCreateBTree.getOptimalDegree();
 		} else {
@@ -38,7 +38,7 @@ public class BTree {
 			}
 		}
 		try {
-			raf = new RandomAccessFile("btreeFileName", "rw");
+			raf = new RandomAccessFile(btreeFileName, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -56,7 +56,7 @@ public class BTree {
 		
 		File file = new File(btreeFileName);
 		try {
-			raf = new RandomAccessFile("btreeFileName", "rw");
+			raf = new RandomAccessFile(btreeFileName, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -332,7 +332,6 @@ public class BTree {
 		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
 		private int parentIndex, index; // index for parent and this node
-		private int offset; //
 		private int degree; // b tree degree
 		/*please explain offset above ^^*/
 
@@ -347,7 +346,6 @@ public class BTree {
 			this.isRoot = isRoot;
 			this.isLeaf = isLeaf;
 			this.index = index;
-			this.offset = offset;
 
 			numKeys = 0;
 
@@ -355,7 +353,6 @@ public class BTree {
 				parentIndex = -1; // To indicate that it has no parent for now
 			}
 
-			offset = 0;
 		}
 
 		/**
@@ -563,16 +560,6 @@ public class BTree {
 		 */
 		public int getOffset() {
 			return (maxBTreeNodeSize * index);
-		}
-
-		/**
-		 * Sets the offset.
-		 * 
-		 * @param os
-		 *            the offset to set the node to.
-		 */
-		public void setOffset(int os) {
-			offset = os;
 		}
 
 

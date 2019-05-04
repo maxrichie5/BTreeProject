@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
 public class GeneBankSearch {
 
@@ -67,13 +69,25 @@ static private Boolean cacheSearch = false;
 		//Create BTree
 		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
 		
+		//Create a dump for query results
+		String dumpFileName = queryFile+"_result";
+		File dumpFile = new File(dumpFileName);
+		if(!dumpFile.exists()) { 
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		RandomAccessFile raf = new RandomAccessFile(dumpFileName, "rw");
+		
 		//search btree
 		for (String queryString: geneStringArray) {
 			long key = gc.convertStringToLong(queryString);
 			int frequency = bt.search(key);
 			
 			if(debugLevelSearch == 1) { //make query dump
-				//TODO
+				raf.writeChars(queryString+": "+frequency+"\n");
 			} else { //print query result to stdout
 				System.out.println(queryString+": "+frequency);
 			}
