@@ -16,10 +16,14 @@ public class BTree implements Serializable {
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 100000; //The largest expected size in bytes of a BTree Node
+	private static int optimal = 4096;
+	
+    private static final int intMetadata = 4;
+    private static final int booleanMetadata = 4;
 
 	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) {
 		if (degree == 0) {
-			degree = GeneBankCreateBTree.getOptimalDegree();
+			degree = getOptimalDegree();
 		} else {
 			this.degree = degree;
 		}
@@ -282,6 +286,21 @@ public class BTree implements Serializable {
 
 		//Reads the given byteArray'd BTreeNode and converts it back into a BTreeNode
 		return (BTreeNode) ois.readObject();
+	}
+	
+	public static int getOptimalDegree() {
+		
+        int metadata = (intMetadata * 4) + (booleanMetadata * 2);
+        int totalSize = 12;
+        int pointerSize = 4;
+
+		optimal -= metadata;
+		optimal += totalSize;
+		optimal -= pointerSize;
+		int dividedBy = ((2*totalSize)+(2*pointerSize));
+		optimal /= dividedBy;
+		return optimal;
+
 	}
 
 	/**

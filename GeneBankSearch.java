@@ -70,16 +70,19 @@ static private Boolean cacheSearch = false;
 		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
 		
 		//Create a dump for query results
-		String dumpFileName = queryFile+"_result";
-		File dumpFile = new File(dumpFileName);
-		if(!dumpFile.exists()) { 
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
+		RandomAccessFile raf = null;
+		if(debugLevelSearch == 1) {
+			String dumpFileName = queryFile+"_result";
+			File dumpFile = new File(dumpFileName);
+			if(!dumpFile.exists()) { 
+				try {
+					file.createNewFile();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+			raf = new RandomAccessFile(dumpFileName, "rw");
 		}
-		RandomAccessFile raf = new RandomAccessFile(dumpFileName, "rw");
 		
 		//search btree
 		for (String queryString: geneStringArray) {
