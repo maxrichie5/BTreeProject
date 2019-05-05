@@ -11,7 +11,8 @@ import java.util.LinkedList;
 
 public class BTree implements Serializable {
 
-	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree     
+	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree  
+	private static Cache cache = null;
 	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
@@ -30,6 +31,9 @@ public class BTree implements Serializable {
 		this.debugLevel = debugLevel;
 		this.sequenceLength = sequenceLength;
 		this.cacheSize = cacheSize;
+		if(cacheSize != 0) {
+			cache = new Cache<BTreeNode>(cacheSize);
+		} 
 		nodeCount = 1;
 		
 		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+degree;
@@ -51,7 +55,7 @@ public class BTree implements Serializable {
 	}
 	
 	public BTree(String btreeFileName, int debugLevel, int cacheSize) throws ClassNotFoundException, IOException {
-		String[] sa = btreeFileName.split("."); //split the file name by .'s
+		String[] sa = btreeFileName.split("\\."); //split the file name by .'s
 		degree = Integer.parseInt(sa[5]); //get degree
 		sequenceLength = Integer.parseInt(sa[4]); //get sequenceLength
 		
@@ -69,7 +73,9 @@ public class BTree implements Serializable {
 	}
 	
 	public void finish() throws IOException {
-		diskWrite(root, root.getOffset());
+		nodeWrite(root);
+		if (cache != null)
+			writeCache();
 	}
 
 	public int search(long key) throws ClassNotFoundException, IOException {
@@ -158,9 +164,9 @@ public class BTree implements Serializable {
 		//newNode.setNumKeys(newNode.getKeys().size());
 
 		//write the nodes
-		diskWrite(parentNode, parentNode.getOffset());
-		diskWrite(child, child.getOffset());
-		diskWrite(newNode, newNode.getOffset());
+		nodeWrite(parentNode);
+		nodeWrite(child);
+		nodeWrite(newNode);
 	}
 
 	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
@@ -177,7 +183,7 @@ public class BTree implements Serializable {
 					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
-						diskWrite(currentNode, currentNode.getOffset());
+						nodeWrite(currentNode);
 						if(debugLevel == 0)
 							System.err.println();
 						return;
@@ -189,7 +195,7 @@ public class BTree implements Serializable {
 				if(debugLevel == 0)
 					System.err.println();
 
-				diskWrite(currentNode, currentNode.getOffset());
+				nodeWrite(currentNode);
 				break;
 			} //end if (currentNode.isLeaf())
 			else
@@ -199,7 +205,7 @@ public class BTree implements Serializable {
 					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
-						diskWrite(currentNode, currentNode.getOffset());
+						nodeWrite(currentNode);
 
 						if(debugLevel == 0)
 							System.err.println();
@@ -221,7 +227,7 @@ public class BTree implements Serializable {
 					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
 					{
 						currentNode.keys.get(index).increaseFreq();
-						diskWrite(currentNode, currentNode.getOffset());
+						nodeWrite(currentNode);
 						if(debugLevel == 0)
 							System.err.println();
 
@@ -331,6 +337,19 @@ public class BTree implements Serializable {
 	 * @throws IOException
 	 */
 	public static BTreeNode diskRead(int position) throws ClassNotFoundException, IOException {
+		
+		BTreeNode checkCache = null;
+		if (cache != null) { 
+			for (int i = 0; i < cache.size()-1; i++) { //Searching cache for BTreeNode
+				if (((BTreeNode) cache.get(i)).getOffset() == position) {
+					checkCache = (BTreeNode) cache.get(i);		
+				}
+			}
+		}
+		if (checkCache != null) { //Found node, don't read from disk
+			return checkCache;
+		}
+		
 		//Creates byte array to be read to
 		byte[] byteArray = new byte[maxBTreeNodeSize];
 
@@ -348,6 +367,39 @@ public class BTree implements Serializable {
 
 		//Returns the node place holder
 		return copyNode;
+	}
+	
+	/**
+	 * Writes all the contents of the cache to update everything at the end
+	 * 
+	 * @throws IOException
+	 */
+	public void writeCache() throws IOException {
+		for (int i = cache.size(); i > 0; i--) { //Goes through whole cache and writes and updates disk
+			BTreeNode node = (BTreeNode) cache.removeLast();
+			nodeWrite(node);
+		}
+	}
+	
+	/**
+	 * Adds node to the cache, if cache is full then it will return the last element
+	 * in cache and write
+	 * 
+	 * @param node
+	 *            Node to be written
+	 * @throws IOException
+	 */
+	public void nodeWrite(BTreeNode node) throws IOException {
+		//TODO Replace diskWrite with nodeWrite so cache works
+		if (cache != null) {
+			BTreeNode checkNode = (BTreeNode) cache.add(node);
+			if (checkNode != null) {
+				diskWrite(checkNode, checkNode.getOffset());
+			}
+		} else {
+			diskWrite(node, node.getOffset());
+		}
+
 	}
 
 	/**
