@@ -18,6 +18,7 @@ public class BTree implements Serializable {
 	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 100000; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
+	private static final long serialVersionUID = 1L;
 	
     private static final int intMetadata = 4;
     private static final int booleanMetadata = 4;
@@ -74,7 +75,7 @@ public class BTree implements Serializable {
 	
 	public void finish() throws IOException {
 		nodeWrite(root);
-		if (cache != null)
+		if(cache != null) 
 			writeCache();
 	}
 
