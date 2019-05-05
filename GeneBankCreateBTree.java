@@ -9,12 +9,6 @@ public class GeneBankCreateBTree {
 	static private int sequenceLength = 0;
 	static private int cacheSizeCreate = 0;
 	static private int debug = 0;
-	static private int optimal = 4096;
-	
-	/** THESE VALUES NEED TO BE UPDATED!!! OR IT WILL NOT WORK!!!! */
-	static private int totalSize;
-	static private int pointerSize;
-	static private int metaData;
 	
 	public static void main(String[] args) {
 
@@ -64,15 +58,6 @@ public class GeneBankCreateBTree {
 
 	}
 	
-	public static int getOptimalDegree() {
-		optimal -= metaData;
-		optimal += totalSize;
-		optimal -= pointerSize;
-		int dividedBy = ((2*totalSize)+(2*pointerSize));
-		optimal /= dividedBy;
-		return optimal;
-	}
-	
 	public static int getDebug() {
 		return debug;
 	}
@@ -104,6 +89,10 @@ public class GeneBankCreateBTree {
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				TreeObject to = new TreeObject(key);
 				btree.insert(to); //Insert the long key into the BTree
+				System.out.println(i);
+				if(i == 153) {
+					System.out.println(" 2eawe");
+				}
 			}	
 		}
 		btree.finish(); //tells btree you are done using it and write root node
