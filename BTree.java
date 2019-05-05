@@ -14,6 +14,7 @@ public class BTree implements Serializable {
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree     
 	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
+	private static int rafOffset = 0; //The position being read/written to in the raf
 	private static int maxBTreeNodeSize = 100000; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
 	
