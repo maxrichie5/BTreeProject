@@ -1,3 +1,4 @@
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
@@ -10,9 +11,10 @@ import java.util.NoSuchElementException;
  * @param <BTreeNode>
  *            For BTreeNode objects
  */
-public class Cache<BTreeNode> {
+public class Cache<BTreeNode> implements Serializable {
 	private LinkedList<BTreeNode> list;
 	private final int MAX_SIZE;
+	private BTreeNode node = null;
 
 	/**
 	 * Creates a new cache with the size given from the parameter
@@ -31,9 +33,10 @@ public class Cache<BTreeNode> {
 	 * @param element
 	 *            node to be added
 	 */
-	public void add(BTreeNode element) {
+	public BTreeNode add(BTreeNode element) {
+		BTreeNode returnNode = null;
 		if (isFull()) {
-			list.removeLast();
+			returnNode = list.removeLast();
 		}
 		BTreeNode node = get(element);
 		if (node == null) {
@@ -41,7 +44,7 @@ public class Cache<BTreeNode> {
 		} else { // node in cache, add to front
 			list.addFirst(node);
 		}
-
+		return returnNode;
 	}
 
 	/**
@@ -52,10 +55,22 @@ public class Cache<BTreeNode> {
 	 * @return BTreeNode if found, null if not found
 	 */
 	public BTreeNode get(BTreeNode element) {
-		if(check(element)) {
+		if (check(element)) {
 			return list.remove(indexOf(element));
 		}
 		return null;
+	}
+	
+	/**
+	 * Looks for BTreeNode in cache and returns it if found.
+	 * 
+	 * @param index
+	 *            node to find
+	 * @return BTreeNode 
+	 */
+	public BTreeNode get(int index) {
+		
+		return list.remove(index);
 	}
 
 	/**
@@ -65,8 +80,16 @@ public class Cache<BTreeNode> {
 	 *            fileOffset, the offset for the node to get
 	 * @return BTreeNode if found, null if not found
 	 */
-	public BTreeNode get(long fileOffset) {
-		// TODO Look for object by a given offset
+	public BTreeNode getObject(int fileOffset) {
+		// TODO
+		// Figure out to get the offset of the BTreeNode
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i).getOffset() == fileOffset) {
+				BTreeNode node = list.remove(i);
+				list.addFirst(node);
+				return node;
+			}
+		}
 
 		return null;
 	}
