@@ -104,6 +104,10 @@ public class GeneBankCreateBTree {
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				TreeObject to = new TreeObject(key);
 				btree.insert(to); //Insert the long key into the BTree
+				System.out.println(i);
+				if(i == 153) {
+					System.out.println(" 2eawe");
+				}
 			}	
 		}
 		btree.finish(); //tells btree you are done using it and write root node

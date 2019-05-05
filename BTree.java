@@ -9,13 +9,13 @@ import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.LinkedList;
 
-public class BTree {
+public class BTree implements Serializable {
 
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree     
 	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int rafOffset = 0; //The position being read/written to in the raf
-	private static int maxBTreeNodeSize = 6000; //The largest expected size in bytes of a BTree Node
+	private static int maxBTreeNodeSize = 100000; //The largest expected size in bytes of a BTree Node
 
 	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) {
 		if (degree == 0) {
@@ -83,7 +83,7 @@ public class BTree {
 			if (currentNode.isLeaf()) {
 				return 0;
 			} else {
-				currentNode = diskRead(currentNode.children.get(i));
+				currentNode = diskRead(currentNode.children.get(i)*maxBTreeNodeSize);
 			}
 		}
 	}
@@ -96,7 +96,6 @@ public class BTree {
 			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
-
 			split(root, 0, nextNode); /*pls explain what OLDROOT is i am confused so i changed it*/
 
 		} else { //root node is not full
@@ -106,13 +105,12 @@ public class BTree {
 	}
 
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) throws IOException {
-		BTreeNode newNode = new BTreeNode(degree, false, false, ++nodeCount);
-
-		newNode.setLeaf(child.isLeaf()); //newNode is a leaf is child is
+		BTreeNode newNode = new BTreeNode(degree, false, child.isLeaf(), ++nodeCount);
 
 		for(int j = 0; j < (degree-1); j++) { //move half the full node's keys to new node
 			newNode.addKey(child.getKey(degree));
 			child.getKeys().remove(degree);
+			child.setNumKeys(child.getNumKeys()-1);
 		}
 
 		if(!child.isLeaf()) { //if child is not a leaf, move half the child's kids to new node
@@ -125,10 +123,16 @@ public class BTree {
 
 		int i = 0;
 		int lastChildIndex = child.getNumKeys()-1;
-		while(i < parentNode.getNumKeys()) { //find where to place key that gets shifted up
-			if(i == parentNode.getNumKeys()-1) { //will add child node's key to end
+		int parentNumKeys = parentNode.getNumKeys();
+		while(i <= parentNumKeys) { //find where to place key that gets shifted up
+			if(parentNumKeys == 0) {
+				parentNode.addKey(child.getKey(lastChildIndex));
+				break;
+			}
+			else if(i == parentNumKeys-1) { //will add child node's key to end
 				parentNode.addKey(child.getKey(lastChildIndex));
 				child.removeKey(lastChildIndex);
+				break;
 			} else { //not at end of parent's list of keys yet
 				int cmpResult = Long.compare( child.getKey(lastChildIndex).getKey(), parentNode.getKey(i).getKey() );
 				if(cmpResult < 0) { //if key < parent key
@@ -140,12 +144,14 @@ public class BTree {
 			i++;
 		}
 
-		parentNode.addChild(newNode.getOffset(), i+1); //add newNode after child in parent's list of children
-
+		parentNode.addChild(newNode.getIndex(), i+1); //add newNode after child in parent's list of children
+		newNode.setParentIndex(parentNode.getIndex());
+		child.setParentIndex(parentNode.getIndex());
+		
 		//set number of keys
-		parentNode.setNumKeys(parentNode.getNumKeys()+1);
-		child.setNumKeys(child.getKeys().size());
-		newNode.setNumKeys(newNode.getKeys().size());
+		//parentNode.setNumKeys(parentNode.getNumKeys()+1);
+		//child.setNumKeys(child.getKeys().size());
+		//newNode.setNumKeys(newNode.getKeys().size());
 
 		//write the nodes
 		diskWrite(parentNode, parentNode.getOffset());
@@ -199,7 +205,12 @@ public class BTree {
 					index--;
 				}
 				index++;
-				nextNode = diskRead(currentNode.children.get(index));
+				if(index == currentNode.getChildren().size()) {
+					currentNode.keys.add(index, to);
+					currentNode.setNumKeys(currentNode.getNumKeys()+1);
+					return;
+				}
+				nextNode = diskRead(currentNode.children.get(index)*maxBTreeNodeSize);
 				if (nextNode.isFull())
 				{
 					split(currentNode, index, nextNode);
@@ -212,7 +223,7 @@ public class BTree {
 
 						return;
 					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0)
-						nextNode = diskRead(currentNode.children.get(index + 1));
+						nextNode = diskRead(currentNode.children.get(index + 1)*maxBTreeNodeSize);
 				}
 				currentNode = nextNode;
 			}
@@ -446,6 +457,7 @@ public class BTree {
 		 * @return The removed TreeObject
 		 */
 		public TreeObject removeKey(int index) {
+			numKeys--;
 			return keys.remove(index);
 		}
 
@@ -456,6 +468,7 @@ public class BTree {
 		 *            Element to be added
 		 */
 		public void addKey(TreeObject key) {
+			numKeys++;
 			keys.add(key);
 		}
 
@@ -468,6 +481,7 @@ public class BTree {
 		 *            Index to be added to it
 		 */
 		public void addKey(TreeObject key, int index) {
+			numKeys++;
 			keys.add(index, key);
 		}
 
