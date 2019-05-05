@@ -173,7 +173,7 @@ public class BTree {
 						return;
 					}
 					index--;
-				}
+				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				currentNode.keys.add(index + 1, to);
 				currentNode.setNumKeys(currentNode.getNumKeys()+1);
 				if(debugLevel == 0)
@@ -181,7 +181,7 @@ public class BTree {
 
 				diskWrite(currentNode, currentNode.getOffset());
 				break;
-			}
+			} //end if (currentNode.isLeaf())
 			else
 			{
 				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
@@ -197,7 +197,7 @@ public class BTree {
 						return;
 					}
 					index--;
-				}
+				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
 				nextNode = diskRead(currentNode.children.get(index));
 				if (nextNode.isFull())
@@ -213,11 +213,11 @@ public class BTree {
 						return;
 					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0)
 						nextNode = diskRead(currentNode.children.get(index + 1));
-				}
+				} //end if (nextNode.isFull())
 				currentNode = nextNode;
-			}
-		}
-	}
+			} //end else for if (currentNode.isLeaf()) 
+		} //end while true
+	} //end insert non full
 
 	/**
 	 * returns length of a long
