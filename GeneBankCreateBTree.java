@@ -90,7 +90,7 @@ public class GeneBankCreateBTree {
 				TreeObject to = new TreeObject(key);
 				btree.insert(to); //Insert the long key into the BTree
 				System.out.println(i);
-				if(i == 153) {
+				if(i == 1500) {
 					System.out.println(" 2eawe");
 				}
 			}	

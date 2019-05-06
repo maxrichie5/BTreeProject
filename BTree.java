@@ -15,8 +15,7 @@ public class BTree implements Serializable {
 	private static Cache cache = null;
 	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
-	private static int rafOffset = 0; //The position being read/written to in the raf
-	private static int maxBTreeNodeSize = 100000; //The largest expected size in bytes of a BTree Node
+	private static long maxBTreeNodeSize = 550000; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
 	private static final long serialVersionUID = 1L;
 	
@@ -159,11 +158,6 @@ public class BTree implements Serializable {
 		newNode.setParentIndex(parentNode.getIndex());
 		child.setParentIndex(parentNode.getIndex());
 		
-		//set number of keys
-		//parentNode.setNumKeys(parentNode.getNumKeys()+1);
-		//child.setNumKeys(child.getKeys().size());
-		//newNode.setNumKeys(newNode.getKeys().size());
-
 		//write the nodes
 		nodeWrite(parentNode);
 		nodeWrite(child);
@@ -316,7 +310,7 @@ public class BTree implements Serializable {
 	 * @param position The offset in the RAF to write the BTreeNode to
 	 * @throws IOException
 	 */
-	public static void diskWrite(BTreeNode node, int position) throws IOException {
+	public static void diskWrite(BTreeNode node, long position) throws IOException {
 		//Serializes the given BTreeNode
 		byte[] byteArray = serialize(node);
 
@@ -327,7 +321,7 @@ public class BTree implements Serializable {
 		raf.write(byteArray);
 
 		//Changes the RandomAccessFile offset position to the next length of the BTreeNode
-		rafOffset += maxBTreeNodeSize;
+		//rafOffset += maxBTreeNodeSize;
 	}
 
 	/**
@@ -337,7 +331,7 @@ public class BTree implements Serializable {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public static BTreeNode diskRead(int position) throws ClassNotFoundException, IOException {
+	public static BTreeNode diskRead(long position) throws ClassNotFoundException, IOException {
 		
 		BTreeNode checkCache = null;
 		if (cache != null) { 
@@ -352,7 +346,7 @@ public class BTree implements Serializable {
 		}
 		
 		//Creates byte array to be read to
-		byte[] byteArray = new byte[maxBTreeNodeSize];
+		byte[] byteArray = new byte[(int)maxBTreeNodeSize];
 
 		//A BTreeNode place holder
 		BTreeNode copyNode = null;
@@ -645,8 +639,8 @@ public class BTree implements Serializable {
 		/**
 		 * Gets the offset.
 		 */
-		public int getOffset() {
-			return (maxBTreeNodeSize * index);
+		public long getOffset() {
+			return (maxBTreeNodeSize * (long)index);
 		}
 
 
