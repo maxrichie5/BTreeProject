@@ -74,27 +74,6 @@ public class Cache<BTreeNode> implements Serializable {
 	}
 
 	/**
-	 * Looks for BTreeNode by file offset in cache and returns it if found.
-	 * 
-	 * @param long
-	 *            fileOffset, the offset for the node to get
-	 * @return BTreeNode if found, null if not found
-	 */
-	public BTreeNode getObject(int fileOffset) {
-		// TODO
-		// Figure out to get the offset of the BTreeNode
-		for (int i = 0; i < list.size(); i++) {
-			if (list.get(i).getOffset() == fileOffset) {
-				BTreeNode node = list.remove(i);
-				list.addFirst(node);
-				return node;
-			}
-		}
-
-		return null;
-	}
-
-	/**
 	 * Removes the last element in the list
 	 * 
 	 * @return the element removed
