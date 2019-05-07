@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.lang.instrument.Instrumentation;
 import java.util.LinkedList;
 
 import sun.misc.Queue;
@@ -19,14 +20,14 @@ public class BTree implements Serializable {
 	private static Cache cache = null;
 	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
-	private static long maxBTreeNodeSize = 550000; //The largest expected size in bytes of a BTree Node
+	private static long maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
 	private static final long serialVersionUID = 1L;
 	
     private static final int intMetadata = 4;
     private static final int booleanMetadata = 4;
 
-	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) {
+	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) throws IOException {
 		if (degree == 0) {
 			degree = getOptimalDegree();
 		} else {
@@ -39,6 +40,7 @@ public class BTree implements Serializable {
 			cache = new Cache<BTreeNode>(cacheSize);
 		} 
 		nodeCount = 1;
+		maxBTreeNodeSize = findGoodSize(degree);
 		
 		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+degree;
 		File file = new File(btreeFileName);
@@ -56,12 +58,14 @@ public class BTree implements Serializable {
 		}
 
 		root = new BTreeNode(degree, true, true, 0);
+		diskWrite(root, root.getOffset());
 	}
 	
 	public BTree(String btreeFileName, int debugLevel, int cacheSize) throws ClassNotFoundException, IOException {
 		String[] sa = btreeFileName.split("\\."); //split the file name by .'s
 		degree = Integer.parseInt(sa[5]); //get degree
 		sequenceLength = Integer.parseInt(sa[4]); //get sequenceLength
+		maxBTreeNodeSize = findGoodSize(degree);
 		
 		this.debugLevel = debugLevel;
 		this.cacheSize = cacheSize;
@@ -107,6 +111,7 @@ public class BTree implements Serializable {
 		if(root.isFull()) { //root node is full
 			nextNode = root; //create node to be parent of root after split
 			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
+			diskWrite(root, root.getOffset());
 			root.children.add(0, nextNode.getIndex());
 			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
@@ -121,6 +126,7 @@ public class BTree implements Serializable {
 
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) throws IOException {
 		BTreeNode newNode = new BTreeNode(degree, false, child.isLeaf(), ++nodeCount);
+		diskWrite(newNode, newNode.getOffset());
 
 		for(int j = 0; j < (degree-1); j++) { //move half the full node's keys to new node
 			newNode.addKey(child.getKey(degree));
@@ -248,6 +254,27 @@ public class BTree implements Serializable {
 	private static int getLongLength(long l) { 
 		String s = ""+l;
 		return s.length();
+	}
+	
+	/**
+	 * Return a good maxBTreeNodeSize
+	 * @param degree
+	 * @return maximum size of node
+	 */
+	private long findGoodSize(int degree) {
+		if(degree < 4 ) {
+			return 10100100;
+		}
+		if(degree <= 8) {
+			return 1100100;
+		}
+		if(degree <= 14) {
+			return 100100;
+		}
+		if(degree <= 50) {
+			return 700100;
+		}
+		return 500100;
 	}
 
 	/**

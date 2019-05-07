@@ -26,13 +26,21 @@ public class GeneBankCreateBTree {
 			degree = Integer.valueOf(args[1]);
 			sequenceLength = Integer.valueOf(args[3]);
 			
-			if (args.length > 4) {
+			if (args.length > 4 && cacheCreate) {
 				cacheSizeCreate = Integer.valueOf(args[4]);	
 			}
-			if (args.length > 5) {
-				debug = Integer.valueOf(args[5]);	
-				
+			if (args.length > 4 && !cacheCreate) {
+				debug = Integer.valueOf(args[4]);	
 			}
+			if(args.length > 5 && cacheCreate) {
+				cacheSizeCreate = Integer.valueOf(args[4]);	
+				debug = Integer.valueOf(args[4]);	
+			}
+			if(args.length > 5 && !cacheCreate) {
+				correctOutput();
+			}
+			
+			
 		}catch(Exception e) {
 			correctOutput();				
 		}
