@@ -1,13 +1,17 @@
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.LinkedList;
+
+import sun.misc.Queue;
 
 public class BTree implements Serializable {
 
@@ -70,6 +74,7 @@ public class BTree implements Serializable {
 		}
 
 		root = diskRead(0);
+		currentNode = root;
 	}
 	
 	public void finish() throws IOException {
@@ -395,6 +400,40 @@ public class BTree implements Serializable {
 			diskWrite(node, node.getOffset());
 		}
 
+	}
+	
+	/**
+	 * Creates a dump file that contains an in-order traversal of the btree 
+	 * and prints out each tree object as DNA String: Frequency
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 */
+	public void makeDump() throws InterruptedException, IOException, ClassNotFoundException {
+		
+		String dumpName = "dump";
+		File file = new File(dumpName); //make a dump file
+		if(!file.exists()) { 
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		BufferedWriter bw = new BufferedWriter(new FileWriter(dumpName));
+		
+		Queue<BTreeNode> que = new Queue<BTreeNode>(); //make a queue to hold all the nodes
+		que.enqueue(root);
+		while(!que.isEmpty()) {
+			BTreeNode node = que.dequeue();
+			for(int i = 0; i < node.getNumKeys(); i++) { //write all the keys
+				bw.write(node.getKey(i).toString()+"\n");
+			}
+			for(int i = 0; i < node.children.size(); i++) { //enqueue all the children
+				BTreeNode nextNode = diskRead( node.children.get(i)*maxBTreeNodeSize );
+				que.enqueue(nextNode);
+			}
+		}
 	}
 
 	/**

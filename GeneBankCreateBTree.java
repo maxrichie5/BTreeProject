@@ -88,6 +88,7 @@ public class GeneBankCreateBTree {
 				String seqString = subString.substring(i, sequenceLength+i); //Get string sequence
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				TreeObject to = new TreeObject(key);
+				if(i == 0) to.setSeqLen(sequenceLength);
 				btree.insert(to); //Insert the long key into the BTree
 				System.out.println(i);
 				if(i == 1500) {
@@ -96,6 +97,15 @@ public class GeneBankCreateBTree {
 			}	
 		}
 		btree.finish(); //tells btree you are done using it and write root node
+		
+		//make dump if debug 1
+		if(debug == 1) {
+			try {
+				btree.makeDump();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 }

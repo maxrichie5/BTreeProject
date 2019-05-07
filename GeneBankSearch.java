@@ -1,5 +1,6 @@
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -70,7 +71,7 @@ static private Boolean cacheSearch = false;
 		BTree bt = new BTree(bTreeFile, debugLevelSearch, cacheSizeSearch);
 		
 		//Create a dump for query results
-		RandomAccessFile raf = null;
+		BufferedWriter bw = null;
 		if(debugLevelSearch == 1) {
 			String dumpFileName = queryFile+"_result";
 			File dumpFile = new File(dumpFileName);
@@ -81,16 +82,16 @@ static private Boolean cacheSearch = false;
 					e.printStackTrace();
 				}
 			}
-			raf = new RandomAccessFile(dumpFileName, "rw");
+			bw = new BufferedWriter(new FileWriter(dumpFileName));
 		}
 		
 		//search btree
 		for (String queryString: geneStringArray) {
+			queryString = queryString.toLowerCase();
 			long key = gc.convertStringToLong(queryString);
 			int frequency = bt.search(key);
-			
 			if(debugLevelSearch == 1) { //make query dump
-				raf.writeChars(queryString+": "+frequency+"\n");
+				bw.write(queryString+": "+frequency+"\n");
 			} else { //print query result to stdout
 				System.out.println(queryString+": "+frequency);
 			}
