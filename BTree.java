@@ -495,6 +495,7 @@ public class BTree implements Serializable {
                 childIndex = 0;
             }
         }
+        bw.close();
 	}
 
 	/**
