@@ -52,10 +52,10 @@ public class GeneBankCreateBTree {
 		
 		try {
 			createBTree();
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("RUN UNSUCCESSFUL");
+			System.exit(0);
 		}
 	
 		long endTime   = System.nanoTime();

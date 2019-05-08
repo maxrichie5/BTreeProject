@@ -110,7 +110,7 @@ public class BTree implements Serializable {
 			nextNode = root; //create node to be parent of root after split
 			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
 			diskWrite(root, root.getOffset());
-			root.addChild(0, nextNode.getIndex());
+			root.addChild(nextNode.getIndex(), 0);
 			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
@@ -265,7 +265,7 @@ public class BTree implements Serializable {
 			return 3000;
 		}
 		if(degree <= 14) {
-			return 4000;
+			return 40000;
 		}
 		if(degree <= 25) {
 			return 9000;
