@@ -191,17 +191,12 @@ public class BTree implements Serializable {
 						}
 						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
-						if(debugLevel == 0)
-							System.err.println();
 						return;
 					}
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				currentNode.addKey(to, index + 1);
 				//currentNode.setNumKeys(currentNode.getNumKeys()+1);
-				if(debugLevel == 0)
-					System.err.println();
-
 				nodeWrite(currentNode);
 				break;
 			} //end if (currentNode.isLeaf())
@@ -217,19 +212,18 @@ public class BTree implements Serializable {
 						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
 
-						if(debugLevel == 0)
-							System.err.println();
-
 						return;
 					}
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
+				/* -- add this back in possibly -- just a test
 				if(index == currentNode.getNumChildren()) {
 					currentNode.addKey(to, index);
 					//currentNode.setNumKeys(currentNode.getNumKeys()+1);
 					return;
 				}
+				*/
 				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
 				if (nextNode.isFull())
 				{
@@ -238,8 +232,6 @@ public class BTree implements Serializable {
 					{
 						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
-						if(debugLevel == 0)
-							System.err.println();
 
 						return;
 					} else if (Long.compare(key, currentNode.getKey(index).getKey()) > 0)
