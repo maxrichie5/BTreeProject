@@ -9,10 +9,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.lang.instrument.Instrumentation;
 import java.util.LinkedList;
-
-import sun.misc.Queue;
+import java.util.Stack;
 
 public class BTree implements Serializable {
 
@@ -449,18 +447,62 @@ public class BTree implements Serializable {
 		}
 		BufferedWriter bw = new BufferedWriter(new FileWriter(dumpName));
 		
-		Queue<BTreeNode> que = new Queue<BTreeNode>(); //make a queue to hold all the nodes
-		que.enqueue(root);
-		while(!que.isEmpty()) {
-			BTreeNode node = que.dequeue();
-			for(int i = 0; i < node.getNumKeys(); i++) { //write all the keys
-				bw.write(node.getKey(i).toString()+"\n");
-			}
-			for(int i = 0; i < node.children.size(); i++) { //enqueue all the children
-				BTreeNode nextNode = diskRead( node.children.get(i)*maxBTreeNodeSize );
-				que.enqueue(nextNode);
-			}
-		}
+        boolean traverse = true; // have to traverse  the tree
+		currentNode = root;
+	    Stack<Integer> children = new Stack<>(); // 
+	    Stack<Integer> treeNodes = new Stack<>();
+        int childIndex = 0;
+        
+        while (traverse)
+        {
+            if (childIndex == currentNode.children.size() && !currentNode.isLeaf())
+            {
+                if (treeNodes.isEmpty() && children.isEmpty()) // done going thru
+                {
+                    traverse = false;
+                    continue;
+                }
+                else
+                {
+                    currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize); // parameter might need modifying
+                    childIndex = children.pop();
+
+                    if (childIndex < currentNode.keys.size())
+                    {
+                        bw.write(currentNode.keys.get(childIndex).toString());
+                    }
+                    childIndex++;
+                    continue;
+                }
+            }
+
+            if (currentNode.isLeaf())
+            {
+                for (int i = 0; i < currentNode.keys.size() ; i++)
+                {
+                    bw.write(currentNode.keys.get(i).toString());
+                }
+
+                if (currentNode == root) {
+                	break;
+                }
+                currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize);
+                childIndex = children.pop();
+
+                if (childIndex < currentNode.keys.size())
+                {
+                   bw.write(currentNode.keys.get(childIndex).toString());
+                }
+                childIndex++;
+            }
+            else
+            {
+                treeNodes.push(currentNode.getIndex());
+                children.push(childIndex);
+                currentNode = diskRead(currentNode.children.get(childIndex)*maxBTreeNodeSize);
+                childIndex = 0;
+            }
+        }
 	}
 
 	/**
