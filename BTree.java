@@ -217,17 +217,17 @@ public class BTree implements Serializable {
 				
 				if (nextNode.isFull())
 				{
-					int pi = nextNode.getNumKeys()-1;
-					while (pi >= 0 && Long.compare(key, nextNode.getKey(pi).getKey()) <= 0)
-					{ //check all of next nodes keys
-						if (Long.compare(key, nextNode.getKey(pi).getKey()) == 0)
-						{
-							nextNode.getKey(pi).increaseFreq();
-							nodeWrite(nextNode);
-							return;
-						}
-						pi--;
-					} //end changes
+//					int pi = nextNode.getNumKeys()-1;
+//					while (pi >= 0 && Long.compare(key, nextNode.getKey(pi).getKey()) <= 0)
+//					{ //check all of next nodes keys
+//						if (Long.compare(key, nextNode.getKey(pi).getKey()) == 0)
+//						{
+//							nextNode.getKey(pi).increaseFreq();
+//							nodeWrite(nextNode);
+//							return;
+//						}
+//						pi--;
+//					} //end changes
 					
 					split(currentNode, index, nextNode);
 					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
