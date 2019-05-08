@@ -464,7 +464,7 @@ public class BTree implements Serializable {
         
         while (traverse)
         {
-            if (childIndex == currentNode.children.size() && !currentNode.isLeaf())
+            if (childIndex == currentNode.getNumChildren() && !currentNode.isLeaf())
             {
                 if (treeNodes.isEmpty() && children.isEmpty()) // done going thru
                 {
@@ -476,9 +476,9 @@ public class BTree implements Serializable {
                     currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize); // parameter might need modifying
                     childIndex = children.pop();
 
-                    if (childIndex < currentNode.keys.size())
+                    if (childIndex < currentNode.getNumKeys())
                     {
-                        bw.write(currentNode.keys.get(childIndex).toString());
+                        bw.write(currentNode.getKey(childIndex).toString()+"\n");
                     }
                     childIndex++;
                     continue;
@@ -487,9 +487,9 @@ public class BTree implements Serializable {
 
             if (currentNode.isLeaf())
             {
-                for (int i = 0; i < currentNode.keys.size() ; i++)
+                for (int i = 0; i < currentNode.getNumKeys() ; i++)
                 {
-                    bw.write(currentNode.keys.get(i).toString());
+                    bw.write(currentNode.getKey(i).toString()+"\n");
                 }
 
                 if (currentNode == root) {
@@ -498,9 +498,9 @@ public class BTree implements Serializable {
                 currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize);
                 childIndex = children.pop();
 
-                if (childIndex < currentNode.keys.size())
+                if (childIndex < currentNode.getNumKeys())
                 {
-                   bw.write(currentNode.keys.get(childIndex).toString());
+                   bw.write(currentNode.getKey(childIndex).toString()+"\n");
                 }
                 childIndex++;
             }
@@ -508,7 +508,7 @@ public class BTree implements Serializable {
             {
                 treeNodes.push(currentNode.getIndex());
                 children.push(childIndex);
-                currentNode = diskRead(currentNode.children.get(childIndex)*maxBTreeNodeSize);
+                currentNode = diskRead(currentNode.getChild(childIndex)*maxBTreeNodeSize);
                 childIndex = 0;
             }
         }
