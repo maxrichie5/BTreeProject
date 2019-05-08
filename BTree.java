@@ -40,9 +40,9 @@ public class BTree implements Serializable {
 			cache = new Cache<BTreeNode>(cacheSize);
 		} 
 		nodeCount = 1;
-		maxBTreeNodeSize = findGoodSize(degree);
+		maxBTreeNodeSize = findGoodSize(this.degree);
 		
-		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+degree;
+		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+this.degree;
 		File file = new File(btreeFileName);
 		if(!file.exists()) { 
 			try {
@@ -281,9 +281,9 @@ public class BTree implements Serializable {
 			return 9000;
 		}
 		if(degree <= 50) {
-			return 10000;
+			return 100000;
 		} 
-		return 50000;
+		return 30000;
 	}
 
 	/**
