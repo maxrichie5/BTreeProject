@@ -9,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.LinkedList;
 import java.util.Stack;
 
 public class BTree implements Serializable {
@@ -243,16 +242,6 @@ public class BTree implements Serializable {
 			} //end else for if (currentNode.isLeaf()) 
 		} //end while true
 	} //end insert non full
-
-	/**
-	 * returns length of a long
-	 * @param l is the long you want the length of 
-	 * @return
-	 */
-	private static int getLongLength(long l) { 
-		String s = ""+l;
-		return s.length();
-	}
 	
 	/**
 	 * Return a good maxBTreeNodeSize
