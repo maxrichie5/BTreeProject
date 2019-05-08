@@ -27,7 +27,7 @@ public class BTree implements Serializable {
 
 	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) throws IOException {
 		if (degree == 0) {
-			degree = getOptimalDegree();
+			this.degree = getOptimalDegree();
 		} else {
 			this.degree = degree;
 		}
@@ -55,7 +55,7 @@ public class BTree implements Serializable {
 			e.printStackTrace();
 		}
 
-		root = new BTreeNode(degree, true, true, 0);
+		root = new BTreeNode(this.degree, true, true, 0);
 		diskWrite(root, root.getOffset());
 	}
 	
@@ -88,19 +88,19 @@ public class BTree implements Serializable {
 	public int search(long key) throws ClassNotFoundException, IOException {
 		while (true) {
 			int i = 0;
-			while (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) > 0){
+			while (i < currentNode.getNumKeys() && Long.compare(key, currentNode.getKey(i).getKey()) > 0){
 				i++;
 			}
 
-			if (i < currentNode.keys.size() && Long.compare(key, currentNode.keys.get(i).getKey()) == 0)
+			if (i < currentNode.getNumKeys() && Long.compare(key, currentNode.getKey(i).getKey()) == 0)
 			{
-				return currentNode.keys.get(i).getFreq();
+				return currentNode.getKey(i).getFreq();
 			}
 
 			if (currentNode.isLeaf()) {
 				return 0;
 			} else {
-				currentNode = diskRead(currentNode.children.get(i)*maxBTreeNodeSize);
+				currentNode = diskRead(currentNode.getChild(i)*maxBTreeNodeSize);
 			}
 		}
 	}
@@ -110,7 +110,7 @@ public class BTree implements Serializable {
 			nextNode = root; //create node to be parent of root after split
 			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
 			diskWrite(root, root.getOffset());
-			root.children.add(0, nextNode.getIndex());
+			root.addChild(0, nextNode.getIndex());
 			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
@@ -128,15 +128,15 @@ public class BTree implements Serializable {
 
 		for(int j = 0; j < (degree-1); j++) { //move half the full node's keys to new node
 			newNode.addKey(child.getKey(degree));
-			child.getKeys().remove(degree);
-			child.setNumKeys(child.getNumKeys()-1);
+			child.removeKey(degree);
+			//child.setNumKeys(child.getNumKeys()-1);
 		}
 
 		if(!child.isLeaf()) { //if child is not a leaf, move half the child's kids to new node
-			int numChildsChildren = child.getChildren().size(); //number of children in child node
+			int numChildsChildren = child.getNumChildren(); //number of children in child node
 			for(int j = 0; j < (numChildsChildren/2); j++) {
 				newNode.addChild(child.getChild(degree), j);
-				child.getChildren().remove(degree);
+				child.removeChild(degree);
 			}
 		}
 
@@ -179,14 +179,17 @@ public class BTree implements Serializable {
 
 		while (true)
 		{
-			int index = currentNode.keys.size() - 1;
+			int index = currentNode.getNumKeys() - 1;
 			if (currentNode.isLeaf())
 			{
-				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
+				while (index >= 0 && Long.compare(key, currentNode.getKey(index).getKey()) <= 0)
 				{
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
-						currentNode.keys.get(index).increaseFreq();
+						if(key==18L) {
+							System.out.println("");
+						}
+						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
 						if(debugLevel == 0)
 							System.err.println();
@@ -194,8 +197,8 @@ public class BTree implements Serializable {
 					}
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
-				currentNode.keys.add(index + 1, to);
-				currentNode.setNumKeys(currentNode.getNumKeys()+1);
+				currentNode.addKey(to, index + 1);
+				//currentNode.setNumKeys(currentNode.getNumKeys()+1);
 				if(debugLevel == 0)
 					System.err.println();
 
@@ -204,11 +207,14 @@ public class BTree implements Serializable {
 			} //end if (currentNode.isLeaf())
 			else
 			{
-				while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
+				while (index >= 0 && Long.compare(key, currentNode.getKey(index).getKey()) <= 0)
 				{
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
-						currentNode.keys.get(index).increaseFreq();
+						if(key==18L) {
+							System.out.println("");
+						}
+						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
 
 						if(debugLevel == 0)
@@ -219,25 +225,25 @@ public class BTree implements Serializable {
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
-				if(index == currentNode.getChildren().size()) {
-					currentNode.keys.add(index, to);
-					currentNode.setNumKeys(currentNode.getNumKeys()+1);
+				if(index == currentNode.getNumChildren()) {
+					currentNode.addKey(to, index);
+					//currentNode.setNumKeys(currentNode.getNumKeys()+1);
 					return;
 				}
-				nextNode = diskRead(currentNode.children.get(index)*maxBTreeNodeSize);
+				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
 				if (nextNode.isFull())
 				{
 					split(currentNode, index, nextNode);
-					if (Long.compare(key, currentNode.keys.get(index).getKey()) == 0)
+					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
-						currentNode.keys.get(index).increaseFreq();
+						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
 						if(debugLevel == 0)
 							System.err.println();
 
 						return;
-					} else if (Long.compare(key, currentNode.keys.get(index).getKey()) > 0)
-						nextNode = diskRead(currentNode.children.get(index + 1)*maxBTreeNodeSize);
+					} else if (Long.compare(key, currentNode.getKey(index).getKey()) > 0)
+						nextNode = diskRead(currentNode.getChild(index + 1)*maxBTreeNodeSize);
 				}
 				currentNode = nextNode;
 			} //end else for if (currentNode.isLeaf()) 
@@ -261,18 +267,21 @@ public class BTree implements Serializable {
 	 */
 	private long findGoodSize(int degree) {
 		if(degree < 4 ) {
-			return 10100100;
+			return 2000;
 		}
 		if(degree <= 8) {
-			return 1100100;
+			return 3000;
 		}
 		if(degree <= 14) {
-			return 100100;
+			return 4000;
+		}
+		if(degree <= 25) {
+			return 9000;
 		}
 		if(degree <= 50) {
-			return 700100;
-		}
-		return 500100;
+			return 10000;
+		} 
+		return 50000;
 	}
 
 	/**
@@ -513,10 +522,11 @@ public class BTree implements Serializable {
 	 */
 	private class BTreeNode implements Serializable {
 
-		private LinkedList<TreeObject> keys; // array of keys for this node
-		private LinkedList<Integer> children; // array of children for this node
+		private TreeObject[] keys; // array of keys for this node
+		private int[] children; // array of children for this node
 		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
+		private int numChildren;
 		private int parentIndex, index; // index for parent and this node
 		private int degree; // b tree degree
 		/*please explain offset above ^^*/
@@ -525,8 +535,8 @@ public class BTree implements Serializable {
 		 * Constructor to create BTreeNode and initialize variables
 		 */
 		public BTreeNode(int degree, boolean isRoot, boolean isLeaf, int index) {
-			keys = new LinkedList<TreeObject>();
-			children = new LinkedList<Integer>();
+			keys = new TreeObject[(2*degree-1)];
+			children = new int[(2*degree)];
 
 			this.degree = degree;
 			this.isRoot = isRoot;
@@ -534,6 +544,7 @@ public class BTree implements Serializable {
 			this.index = index;
 
 			numKeys = 0;
+			numChildren = 0;
 
 			if (isRoot()) {
 				parentIndex = -1; // To indicate that it has no parent for now
@@ -547,7 +558,7 @@ public class BTree implements Serializable {
 		 * @return
 		 */
 		public boolean isFull() {
-			return keys.size() == ((2*degree)-1);
+			return numKeys == ((2*degree)-1);
 		}
 
 
@@ -558,6 +569,14 @@ public class BTree implements Serializable {
 		public int getNumKeys() {
 			return numKeys;
 		}
+		
+		/**
+		 * 
+		 * @return Number of children in this BTreeNode
+		 */
+		public int getNumChildren() {
+			return numChildren;
+		}
 
 		/**
 		 * Sets the number of keys in this BTreeNode
@@ -566,6 +585,15 @@ public class BTree implements Serializable {
 		 */
 		public void setNumKeys(int numKeys) {
 			this.numKeys = numKeys;
+		}
+		
+		/**
+		 * Sets the number of children in this BTreeNode
+		 * 
+		 * @param numC
+		 */
+		public void setNumChildren(int numC) {
+			numChildren = numC;
 		}
 
 		/**
@@ -612,14 +640,14 @@ public class BTree implements Serializable {
 		 *            Index of key
 		 * @return TreeObject of that index
 		 */
-		public TreeObject getKey(int key) {
-			return keys.get(key);
+		public TreeObject getKey(int index) {
+			return keys[index];
 		}
 
 		/**
 		 * @return The list of keys
 		 */
-		public LinkedList<TreeObject> getKeys() {
+		public TreeObject[] getKeys() {
 			return keys;
 		}
 
@@ -631,8 +659,14 @@ public class BTree implements Serializable {
 		 * @return The removed TreeObject
 		 */
 		public TreeObject removeKey(int index) {
+			TreeObject rtn = keys[index];
+			int i = index;
+			while(i < numKeys-1) {
+				keys[i] = keys[i+1];
+				i++;
+			}			
 			numKeys--;
-			return keys.remove(index);
+			return rtn;
 		}
 
 		/**
@@ -642,8 +676,8 @@ public class BTree implements Serializable {
 		 *            Element to be added
 		 */
 		public void addKey(TreeObject key) {
+			keys[numKeys] = key;
 			numKeys++;
-			keys.add(key);
 		}
 
 		/**
@@ -655,8 +689,13 @@ public class BTree implements Serializable {
 		 *            Index to be added to it
 		 */
 		public void addKey(TreeObject key, int index) {
+			int i = numKeys;
+			while(i > index) {
+				keys[i] = keys[i-1];
+				i--;
+			}
+			keys[index] = key;
 			numKeys++;
-			keys.add(index, key);
 		}
 
 		/**
@@ -666,7 +705,8 @@ public class BTree implements Serializable {
 		 *            Child to be added
 		 */
 		public void addChild(int child) {
-			children.add(child);
+			children[numChildren] = child;
+			numChildren++;
 		}
 
 		/**
@@ -678,7 +718,13 @@ public class BTree implements Serializable {
 		 *            Index to add child at
 		 */
 		public void addChild(Integer child, int index) {
-			children.add(index, child);
+			int i = numChildren;
+			while(i > index) {
+				children[i] = children[i-1];
+				i--;
+			}
+			children[index] = child;
+			numChildren++;
 		}
 
 		/**
@@ -689,7 +735,7 @@ public class BTree implements Serializable {
 		 * @return The value of the int at that index
 		 */
 		public int getChild(int index) {
-			return children.get(index).intValue();
+			return children[index];
 		}
 
 		/**
@@ -700,13 +746,20 @@ public class BTree implements Serializable {
 		 * @return The removed child value at that index
 		 */
 		public int removeChild(int index) {
-			return children.remove(index);
+			int rtn = children[index];
+			int i = index;
+			while(i < numChildren-1) {
+				children[i] = children[i+1];
+				i++;
+			}			
+			numChildren--;
+			return rtn;
 		}
 
 		/**
 		 * @return The list of children
 		 */
-		public LinkedList<Integer> getChildren() {
+		public int[] getChildren() {
 			return children;
 		}
 
@@ -756,12 +809,12 @@ public class BTree implements Serializable {
 		public String toString() {
 			String btnstr = "";
 			btnstr += "Keys: ";
-			for (int i = 0; i < keys.size(); i++) {
-				btnstr += keys.get(i) + " ";
+			for (int i = 0; i < numKeys; i++) {
+				btnstr += keys[i] + " ";
 			}
 			btnstr += "\nChildren: ";
-			for (int i = 0; i < children.size(); i++) {
-				btnstr += children.get(i) + " ";
+			for (int i = 0; i < numChildren; i++) {
+				btnstr += children[i] + " ";
 			}
 			return btnstr;
 		}

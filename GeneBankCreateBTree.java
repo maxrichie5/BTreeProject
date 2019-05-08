@@ -12,6 +12,7 @@ public class GeneBankCreateBTree {
 	
 	public static void main(String[] args) {
 
+		long startTime = System.nanoTime();
 		
 		if (args.length > 6 || args.length < 4) {
 			correctOutput();
@@ -57,7 +58,15 @@ public class GeneBankCreateBTree {
 			e.printStackTrace();
 		}
 	
-	
+		long endTime   = System.nanoTime();
+		long totalTime = endTime - startTime;
+		double seconds = totalTime/1000000000.0;
+		double minutes = seconds/60;
+		System.out.println("Runtime:");
+		System.out.println("Seconds: "+seconds);
+		System.out.println("Minutes: "+minutes);
+		
+		System.out.println("\nRun Successful.");
 	}
 	
 	public static void correctOutput() {
@@ -97,11 +106,11 @@ public class GeneBankCreateBTree {
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				TreeObject to = new TreeObject(key);
 				if(i == 0) to.setSeqLen(sequenceLength);
+				if(i==263) {
+					System.out.println("");
+				}
 				btree.insert(to); //Insert the long key into the BTree
 				System.out.println(i);
-				if(i == 1500) {
-					System.out.println(" 2eawe");
-				}
 			}	
 		}
 		btree.finish(); //tells btree you are done using it and write root node
