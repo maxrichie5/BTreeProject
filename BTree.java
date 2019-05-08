@@ -129,7 +129,6 @@ public class BTree implements Serializable {
 		for(int j = 0; j < (degree-1); j++) { //move half the full node's keys to new node
 			newNode.addKey(child.getKey(degree));
 			child.removeKey(degree);
-			//child.setNumKeys(child.getNumKeys()-1);
 		}
 
 		if(!child.isLeaf()) { //if child is not a leaf, move half the child's kids to new node
@@ -176,7 +175,7 @@ public class BTree implements Serializable {
 	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
 		Long key = to.getKey();
 		currentNode = root;
-
+		
 		while (true)
 		{
 			int index = currentNode.getNumKeys() - 1;
@@ -186,17 +185,13 @@ public class BTree implements Serializable {
 				{
 					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
-						if(key==18L) {
-							System.out.println("");
-						}
 						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
 						return;
 					}
 					index--;
-				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
+				}
 				currentNode.addKey(to, index + 1);
-				//currentNode.setNumKeys(currentNode.getNumKeys()+1);
 				nodeWrite(currentNode);
 				break;
 			} //end if (currentNode.isLeaf())
@@ -206,27 +201,34 @@ public class BTree implements Serializable {
 				{
 					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
-						if(key==18L) {
-							System.out.println("");
-						}
 						currentNode.getKey(index).increaseFreq();
 						nodeWrite(currentNode);
-
 						return;
 					}
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
-				/* -- add this back in possibly -- just a test
+				
 				if(index == currentNode.getNumChildren()) {
 					currentNode.addKey(to, index);
-					//currentNode.setNumKeys(currentNode.getNumKeys()+1);
 					return;
 				}
-				*/
 				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
+				
 				if (nextNode.isFull())
 				{
+					int pi = nextNode.getNumKeys()-1;
+					while (pi >= 0 && Long.compare(key, nextNode.getKey(pi).getKey()) <= 0)
+					{ //check all of next nodes keys
+						if (Long.compare(key, nextNode.getKey(pi).getKey()) == 0)
+						{
+							nextNode.getKey(pi).increaseFreq();
+							nodeWrite(nextNode);
+							return;
+						}
+						pi--;
+					} //end changes
+					
 					split(currentNode, index, nextNode);
 					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
@@ -259,7 +261,7 @@ public class BTree implements Serializable {
 	 */
 	private long findGoodSize(int degree) {
 		if(degree < 4 ) {
-			return 2000;
+			return 1000000;
 		}
 		if(degree <= 8) {
 			return 3000;
