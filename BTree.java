@@ -266,7 +266,7 @@ public class BTree implements Serializable {
 	public static int getOptimalDegree() {
 		
         int metadata = (intMetadata * 4) + (booleanMetadata * 2);
-        int totalSize = 12;
+        int totalSize = 30;
         int pointerSize = 4;
 
 		optimal -= metadata;
