@@ -1,0 +1,17 @@
+**************
+CS321 Project 4
+Max Richmond, Thomas Reinking, Egzona Rexhepi
+May 9 2019
+**************
+
+OVERVIEW
+
+The BTree Bioinformatics Project is used to determine the frequency of different lengths of DNA bases in a GeneBank File. 
+
+PROGRAM DESIGN
+
+The GeneBankCreateBTree (referred to as Create from now on) and GeneBankSearch (referred to as Search from now on) are our driver classes. 
+
+Create accepts command line arguments to create a B Tree from a given GeneBankFile, and also handles other command line args used to specify the preperties of the BTree, such as whether it uses a Cache, its degree, etc. Create calls the Parser Class which then Parses the GBK File to a readable String, which is then converted to Longs in the GeneConverter class. The longs are to be used as our keys in the BTree. The TreeObject class is an object that holds the key for memory management and to keep track of frequency for each key. The inner BTreeNode class manipulates the TreeObject to add it as a key in a node and manipulate the Node as such. This is a very standard Node class using an array to keep track of the children and keys. The BTreeNodes are instantiated in the BTree class and added to the overall BTree with proper insert and split functions to ensure the data structure is a proper BTree. The BTree class is also where the longs are serialized to bytes and then added to a random access file, which we write to and read from for different BTree functions. If the user has specified they would like to use a Cache, we make on object of our Cache class, which specifies all the methods to add, remove, etc. in a Cache, simulating a Cache for our project, which is used to "hold" our BTree where each entry is a node. Then, depending on which type of output was declared in Create, after completing the BTree, BTree class will create a dump file using inorder traversal.
+
+Search accepts command line arguments to search a BTree for a specified query length. The Query Parser class will go through the contents of the given query file (holding BTree) and parse them to longs, which are converted to Strings in the GeneConverter class. Then Seach will return appropriate information about the sequences of length.
