@@ -35,7 +35,7 @@ public class GeneBankCreateBTree {
 			}
 			if(args.length > 5 && cacheCreate) {
 				cacheSizeCreate = Integer.valueOf(args[4]);	
-				debug = Integer.valueOf(args[4]);	
+				debug = Integer.valueOf(args[5]);	
 			}
 			if(args.length > 5 && !cacheCreate) {
 				correctOutput();
@@ -106,11 +106,7 @@ public class GeneBankCreateBTree {
 				long key = gc.convertStringToLong(seqString); //Convert string sequence to long
 				TreeObject to = new TreeObject(key);
 				if(i == 0) to.setSeqLen(sequenceLength);
-				if(i==263) {
-					System.out.println("");
-				}
 				btree.insert(to); //Insert the long key into the BTree
-				System.out.println(i);
 			}	
 		}
 		btree.finish(); //tells btree you are done using it and write root node

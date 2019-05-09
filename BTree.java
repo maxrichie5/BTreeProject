@@ -45,7 +45,7 @@ public class BTree implements Serializable {
 				e.printStackTrace();
 			}
 		}
-		try {
+		try { //make raf
 			raf = new RandomAccessFile(btreeFileName, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
