@@ -15,7 +15,7 @@ public class BTree implements Serializable {
 
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree  
 	private static Cache cache = null;
-	private int debugLevel, degree, cacheSize, sequenceLength, nodeCount;
+	private int  degree, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static long maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
@@ -30,9 +30,6 @@ public class BTree implements Serializable {
 		} else {
 			this.degree = degree;
 		}
-		this.debugLevel = debugLevel;
-		this.sequenceLength = sequenceLength;
-		this.cacheSize = cacheSize;
 		if(cacheSize != 0) {
 			cache = new Cache<BTreeNode>(cacheSize);
 		} 
@@ -61,11 +58,7 @@ public class BTree implements Serializable {
 	public BTree(String btreeFileName, int debugLevel, int cacheSize) throws ClassNotFoundException, IOException {
 		String[] sa = btreeFileName.split("\\."); //split the file name by .'s
 		degree = Integer.parseInt(sa[5]); //get degree
-		sequenceLength = Integer.parseInt(sa[4]); //get sequenceLength
 		maxBTreeNodeSize = findGoodSize(degree);
-		
-		this.debugLevel = debugLevel;
-		this.cacheSize = cacheSize;
 		
 		File file = new File(btreeFileName);
 		try {
@@ -110,7 +103,6 @@ public class BTree implements Serializable {
 			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
 			diskWrite(root, root.getOffset());
 			root.addChild(nextNode.getIndex(), 0);
-			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
 			split(root, 0, nextNode); 
@@ -136,7 +128,6 @@ public class BTree implements Serializable {
 		}
 
 		parentNode.addChild(newNode.getIndex(), childIndex+1); //add newNode after child in parent's list of children
-		newNode.setParentIndex(parentNode.getIndex());
 		int index = parentNode.getNumKeys()-1;
 		long key = child.getKey(degree-1).getKey();
 		while (index >= 0 && Long.compare(key, parentNode.getKey(index).getKey()) <= 0)
@@ -502,7 +493,7 @@ public class BTree implements Serializable {
 		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
 		private int numChildren;
-		private int parentIndex, index; // index for parent and this node
+		private int index; // index for parent and this node
 		private int degree; // b tree degree
 		/*please explain offset above ^^*/
 
@@ -521,9 +512,6 @@ public class BTree implements Serializable {
 			numKeys = 0;
 			numChildren = 0;
 
-			if (isRoot()) {
-				parentIndex = -1; // To indicate that it has no parent for now
-			}
 
 		}
 
@@ -554,43 +542,6 @@ public class BTree implements Serializable {
 		}
 
 		/**
-		 * Sets the number of keys in this BTreeNode
-		 * 
-		 * @param numKeys
-		 */
-		public void setNumKeys(int numKeys) {
-			this.numKeys = numKeys;
-		}
-		
-		/**
-		 * Sets the number of children in this BTreeNode
-		 * 
-		 * @param numC
-		 */
-		public void setNumChildren(int numC) {
-			numChildren = numC;
-		}
-
-		/**
-		 * Gets the index of parent
-		 * 
-		 * @return Parent Index
-		 */
-		public int getParentIndex() {
-			return parentIndex;
-		}
-
-		/**
-		 * Sets the index of parent
-		 * 
-		 * @param parent
-		 */
-		public void setParentIndex(int parentIndex) {
-			this.parentIndex = parentIndex;
-		}
-
-
-		/**
 		 * Gets the index of node
 		 * 
 		 * @return Parent Index
@@ -599,14 +550,7 @@ public class BTree implements Serializable {
 			return index;
 		}
 
-		/**
-		 * Sets the index of node
-		 * 
-		 * @param parent
-		 */
-		public void setIndex(int index) {
-			this.index = index;
-		}
+		
 
 		/**
 		 * Gets the key of TreeObject for that index
@@ -619,12 +563,7 @@ public class BTree implements Serializable {
 			return keys[index];
 		}
 
-		/**
-		 * @return The list of keys
-		 */
-		public TreeObject[] getKeys() {
-			return keys;
-		}
+		
 
 		/**
 		 * Removes the key at index
@@ -673,16 +612,7 @@ public class BTree implements Serializable {
 			numKeys++;
 		}
 
-		/**
-		 * Adds a child to the list
-		 * 
-		 * @param child
-		 *            Child to be added
-		 */
-		public void addChild(int child) {
-			children[numChildren] = child;
-			numChildren++;
-		}
+		
 
 		/**
 		 * Adds a child to the given index
@@ -732,24 +662,10 @@ public class BTree implements Serializable {
 		}
 
 		/**
-		 * @return The list of children
-		 */
-		public int[] getChildren() {
-			return children;
-		}
-
-		/**
 		 * @return True if this node is a leaf node, false otherwise
 		 */
 		public boolean isLeaf() {
 			return isLeaf;
-		}
-
-		/**
-		 * @return True if this node is a root node, false otherwise
-		 */
-		public boolean isRoot() {
-			return isRoot;
 		}
 
 		/**
@@ -760,16 +676,6 @@ public class BTree implements Serializable {
 		 */
 		public void setRoot(boolean isRoot) {
 			this.isRoot = isRoot;
-		}
-
-		/**
-		 * Sets the isLeaf boolean to true or false.
-		 * 
-		 * @param leafValue
-		 *            Boolean to set the leaf value to
-		 */
-		public void setLeaf(boolean leafValue) {
-			isLeaf = leafValue;
 		}
 
 		/**
