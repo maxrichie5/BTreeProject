@@ -85,6 +85,7 @@ public class BTree implements Serializable {
 	}
 
 	public int search(long key) throws ClassNotFoundException, IOException {
+		currentNode = root;
 		while (true) {
 			int i = 0;
 			while (i < currentNode.getNumKeys() && Long.compare(key, currentNode.getKey(i).getKey()) > 0){
@@ -209,20 +210,6 @@ public class BTree implements Serializable {
 					{
 						nextNode = diskRead(currentNode.getChild(index + 1)*maxBTreeNodeSize);
 					}
-					
-//					split(currentNode, index, nextNode);
-//					int tmp = index;
-//					while(tmp >= 0 && Long.compare(key, currentNode.getKey(tmp).getKey()) <= 0) 
-//					{
-//						if (Long.compare(key, currentNode.getKey(tmp).getKey()) == 0)
-//						{
-//							currentNode.getKey(tmp).increaseFreq();
-//							nodeWrite(currentNode);
-//							return;
-//						} 
-//						tmp--;
-//					}
-//					
 				}
 				currentNode = nextNode;
 			} //end else for if (currentNode.isLeaf()) 
@@ -273,10 +260,12 @@ public class BTree implements Serializable {
 		oos.writeObject(node);
 		oos.flush();
 		oos.close();
+		
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
 		baos.flush();
 		baos.close();
+		
 		//Returns the given node as an array of bytes
 		return stream;
 	}
@@ -332,9 +321,6 @@ public class BTree implements Serializable {
 
 		//Writes the byte array to the RandomAccessFile
 		raf.write(byteArray);
-		
-		//Changes the RandomAccessFile offset position to the next length of the BTreeNode
-		//rafOffset += maxBTreeNodeSize;
 	}
 
 	/**
@@ -504,7 +490,6 @@ public class BTree implements Serializable {
 		private int numChildren;
 		private int parentIndex, index; // index for parent and this node
 		private int degree; // b tree degree
-		/*please explain offset above ^^*/
 
 		/**
 		 * Constructor to create BTreeNode and initialize variables

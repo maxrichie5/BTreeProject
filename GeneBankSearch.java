@@ -14,6 +14,7 @@ static private Boolean cacheSearch = false;
 	
 	public static void main(String[] args) {
 
+		long startTime = System.nanoTime();
 		
 		if (args.length > 5 || args.length < 3) {
 			correctOutput();
@@ -25,16 +26,23 @@ static private Boolean cacheSearch = false;
 		}
 		bTreeFile = args[1];
 		queryFile = args[2];
-		if (args.length > 3) {
+		if (args.length > 3 && cacheSearch) {
 			try {
 				cacheSizeSearch = Integer.valueOf(args[3]);	
 			}catch(Exception e) {
 				correctOutput();				
 			}
 		}
-		if (args.length > 4) {
+		if (args.length > 4 && cacheSearch) {
 			try {
 				debugLevelSearch = Integer.valueOf(args[4]);	
+			}catch(Exception e) {
+				correctOutput();				
+			}
+		}
+		if (args.length > 3 && !cacheSearch) {
+			try {
+				debugLevelSearch = Integer.valueOf(args[3]);	
 			}catch(Exception e) {
 				correctOutput();				
 			}
@@ -42,11 +50,21 @@ static private Boolean cacheSearch = false;
 		
 		try {
 			search();
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("RUN UNSUCCESSFUL");
+			System.exit(0);
 		}
+		
+		long endTime   = System.nanoTime();
+		long totalTime = endTime - startTime;
+		double seconds = totalTime/1000000000.0;
+		double minutes = seconds/60;
+		System.out.println("Runtime:");
+		System.out.println("Seconds: "+seconds);
+		System.out.println("Minutes: "+minutes);
+		
+		System.out.println("\nRun Successful.");
 	}
 	
 	private static void correctOutput() {
@@ -73,7 +91,7 @@ static private Boolean cacheSearch = false;
 		//Create a dump for query results
 		BufferedWriter bw = null;
 		if(debugLevelSearch == 1) {
-			String dumpFileName = queryFile+"_result";
+			String dumpFileName = "btree.search."+queryFile+"_result";
 			File dumpFile = new File(dumpFileName);
 			if(!dumpFile.exists()) { 
 				try {
@@ -96,7 +114,9 @@ static private Boolean cacheSearch = false;
 				System.out.println(queryString+": "+frequency);
 			}
 		}		
-		
+		if(bw != null) {
+			bw.close();
+		}
 	}
 
 }
