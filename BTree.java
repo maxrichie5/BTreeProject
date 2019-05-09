@@ -113,12 +113,9 @@ public class BTree implements Serializable {
 			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
-			split(root, 0, nextNode); /*pls explain what OLDROOT is i am confused so i changed it*/
-
-		} else { //root node is not full
-			insertNonFull(to);
+			split(root, 0, nextNode); 
 		}
-
+		insertNonFull(to);
 	}
 
 	private void split(BTreeNode parentNode, int childIndex, BTreeNode child) throws IOException {
@@ -138,32 +135,15 @@ public class BTree implements Serializable {
 			}
 		}
 
-		int i = 0;
-		int lastChildIndex = child.getNumKeys()-1;
-		int parentNumKeys = parentNode.getNumKeys();
-		while(i <= parentNumKeys) { //find where to place key that gets shifted up
-			if(parentNumKeys == 0) {
-				parentNode.addKey(child.getKey(lastChildIndex));
-				break;
-			}
-			else if(i == parentNumKeys-1) { //will add child node's key to end
-				parentNode.addKey(child.getKey(lastChildIndex));
-				child.removeKey(lastChildIndex);
-				break;
-			} else { //not at end of parent's list of keys yet
-				int cmpResult = Long.compare( child.getKey(lastChildIndex).getKey(), parentNode.getKey(i).getKey() );
-				if(cmpResult < 0) { //if key < parent key
-					parentNode.addKey(child.getKey(lastChildIndex), i); //add key to current spot
-					child.removeKey(lastChildIndex);
-					break;
-				} //else go to next index
-			}
-			i++;
-		}
-
-		parentNode.addChild(newNode.getIndex(), i+1); //add newNode after child in parent's list of children
+		parentNode.addChild(newNode.getIndex(), childIndex+1); //add newNode after child in parent's list of children
 		newNode.setParentIndex(parentNode.getIndex());
-		child.setParentIndex(parentNode.getIndex());
+		int index = parentNode.getNumKeys()-1;
+		long key = child.removeKey(degree-1).getKey();
+		while (index >= 0 && Long.compare(key, parentNode.getKey(index).getKey()) <= 0)
+		{
+			index--;
+		}
+		parentNode.addKey(child.removeKey(degree-1), index+1);
 		
 		//write the nodes
 		nodeWrite(parentNode);
@@ -208,26 +188,15 @@ public class BTree implements Serializable {
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
 				
-				if(index == currentNode.getNumChildren()) {
+				if(index >= currentNode.getNumChildren()) {
 					currentNode.addKey(to, index);
+					nodeWrite(currentNode);
 					return;
 				}
 				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
 				
 				if (nextNode.isFull())
-				{
-//					int pi = nextNode.getNumKeys()-1;
-//					while (pi >= 0 && Long.compare(key, nextNode.getKey(pi).getKey()) <= 0)
-//					{ //check all of next nodes keys
-//						if (Long.compare(key, nextNode.getKey(pi).getKey()) == 0)
-//						{
-//							nextNode.getKey(pi).increaseFreq();
-//							nodeWrite(nextNode);
-//							return;
-//						}
-//						pi--;
-//					} //end changes
-					
+				{				
 					split(currentNode, index, nextNode);
 					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
 					{
