@@ -196,16 +196,32 @@ public class BTree implements Serializable {
 				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
 				
 				if (nextNode.isFull())
-				{				
-					split(currentNode, index, nextNode);
-					if (Long.compare(key, currentNode.getKey(index).getKey()) == 0)
+				{			
+					if(Long.compare(key, nextNode.getKey(degree/2).getKey()) == 0) 
 					{
-						currentNode.getKey(index).increaseFreq();
-						nodeWrite(currentNode);
-
+						nextNode.getKey(degree/2).increaseFreq();
+						nodeWrite(nextNode);
 						return;
-					} else if (Long.compare(key, currentNode.getKey(index).getKey()) > 0)
+					}
+					split(currentNode, index, nextNode);
+					if (Long.compare(key, currentNode.getKey(index).getKey()) > 0) 
+					{
 						nextNode = diskRead(currentNode.getChild(index + 1)*maxBTreeNodeSize);
+					}
+					
+//					split(currentNode, index, nextNode);
+//					int tmp = index;
+//					while(tmp >= 0 && Long.compare(key, currentNode.getKey(tmp).getKey()) <= 0) 
+//					{
+//						if (Long.compare(key, currentNode.getKey(tmp).getKey()) == 0)
+//						{
+//							currentNode.getKey(tmp).increaseFreq();
+//							nodeWrite(currentNode);
+//							return;
+//						} 
+//						tmp--;
+//					}
+//					
 				}
 				currentNode = nextNode;
 			} //end else for if (currentNode.isLeaf()) 
