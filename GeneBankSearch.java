@@ -106,6 +106,9 @@ static private Boolean cacheSearch = false;
 		//search btree
 		for (String queryString: geneStringArray) {
 			queryString = queryString.toLowerCase();
+			if(queryString.equals("ttttttt")) {
+				System.out.print("");;
+			}
 			long key = gc.convertStringToLong(queryString);
 			int frequency = bt.search(key);
 			if(debugLevelSearch == 1) { //make query dump

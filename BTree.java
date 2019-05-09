@@ -17,7 +17,7 @@ public class BTree implements Serializable {
 	private static Cache cache = null;
 	private int  degree, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
-	private static long maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
+	private static int maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
 	private static final long serialVersionUID = 1L;
 	
@@ -212,23 +212,8 @@ public class BTree implements Serializable {
 	 * @param degree
 	 * @return maximum size of node
 	 */
-	private long findGoodSize(int degree) {
-		if(degree <= 4 ) {
-			return 1500000;
-		}
-		if(degree <= 8) {
-			return 90000;
-		}
-		if(degree <= 14) {
-			return 40000;
-		}
-		if(degree <= 25) {
-			return 30000;
-		}
-		if(degree <= 50) {
-			return 35000;
-		} 
-		return 25000;
+	private int findGoodSize(int degree) {
+		return 5000*degree;
 	}
 
 	/**
@@ -249,13 +234,10 @@ public class BTree implements Serializable {
 		
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-		oos.flush();
-		oos.close();
 		
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
-		baos.flush();
-		baos.close();
+		oos.close();
 		
 		//Returns the given node as an array of bytes
 		return stream;
@@ -278,7 +260,6 @@ public class BTree implements Serializable {
 		//Reads the given byteArray'd BTreeNode and converts it back into a BTreeNode
 		BTreeNode tmp = (BTreeNode) ois.readObject();
 		ois.close();
-		bais.close();
 		return tmp;
 	}
 	
@@ -336,7 +317,7 @@ public class BTree implements Serializable {
 		}
 		
 		//Creates byte array to be read to
-		byte[] byteArray = new byte[(int)maxBTreeNodeSize];
+		byte[] byteArray = new byte[maxBTreeNodeSize];
 
 		//A BTreeNode place holder
 		BTreeNode copyNode = null;
@@ -481,6 +462,7 @@ public class BTree implements Serializable {
 		private int numChildren;
 		private int index; // index for parent and this node
 		private int degree; // b tree degree
+		private static final long serialVersionUID = 1L;
 
 		/**
 		 * Constructor to create BTreeNode and initialize variables
@@ -493,7 +475,6 @@ public class BTree implements Serializable {
 			this.isRoot = isRoot;
 			this.isLeaf = isLeaf;
 			this.index = index;
-
 			numKeys = 0;
 			numChildren = 0;
 
@@ -666,8 +647,8 @@ public class BTree implements Serializable {
 		/**
 		 * Gets the offset.
 		 */
-		public long getOffset() {
-			return (maxBTreeNodeSize * (long)index);
+		public int getOffset() {
+			return (maxBTreeNodeSize * index);
 		}
 
 
