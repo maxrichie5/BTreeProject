@@ -3,10 +3,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Stack;
@@ -377,21 +379,14 @@ public class BTree implements Serializable {
 	 */
 	public void makeDump() throws InterruptedException, IOException, ClassNotFoundException {
 		
-		String dumpName = "dump";
-		File file = new File(dumpName); //make a dump file
-		if(!file.exists()) { 
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		BufferedWriter bw = new BufferedWriter(new FileWriter(dumpName));
 		
-        boolean traverse = true; // have to traverse  the tree
+        boolean traverse = true;
+        // have to traverse  the tree
 		currentNode = root;
 	    Stack<Integer> children = new Stack<>(); // 
 	    Stack<Integer> treeNodes = new Stack<>();
+	    FileOutputStream outFileStream = new FileOutputStream(new File("dump.txt"));
+        PrintWriter bw = new PrintWriter(outFileStream);
         int childIndex = 0;
         
         while (traverse)
