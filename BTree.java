@@ -138,7 +138,7 @@ public class BTree implements Serializable {
 		parentNode.addChild(newNode.getIndex(), childIndex+1); //add newNode after child in parent's list of children
 		newNode.setParentIndex(parentNode.getIndex());
 		int index = parentNode.getNumKeys()-1;
-		long key = child.removeKey(degree-1).getKey();
+		long key = child.getKey(degree-1).getKey();
 		while (index >= 0 && Long.compare(key, parentNode.getKey(index).getKey()) <= 0)
 		{
 			index--;
@@ -170,11 +170,12 @@ public class BTree implements Serializable {
 					}
 					index--;
 				}
-				currentNode.addKey(to, index + 1);
+				index++;
+				currentNode.addKey(to, index);
 				nodeWrite(currentNode);
 				break;
 			} //end if (currentNode.isLeaf())
-			else
+			else //not a leaf
 			{
 				while (index >= 0 && Long.compare(key, currentNode.getKey(index).getKey()) <= 0)
 				{
@@ -234,22 +235,22 @@ public class BTree implements Serializable {
 	 * @return maximum size of node
 	 */
 	private long findGoodSize(int degree) {
-		if(degree < 4 ) {
-			return 1000000;
+		if(degree <= 4 ) {
+			return 1500000;
 		}
 		if(degree <= 8) {
-			return 3000;
+			return 90000;
 		}
 		if(degree <= 14) {
 			return 40000;
 		}
 		if(degree <= 25) {
-			return 9000;
+			return 30000;
 		}
 		if(degree <= 50) {
-			return 100000;
+			return 35000;
 		} 
-		return 30000;
+		return 25000;
 	}
 
 	/**
@@ -267,13 +268,15 @@ public class BTree implements Serializable {
 
 		//Creates an ObjectOutputStream
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-
+		
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-
+		oos.flush();
+		oos.close();
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
-
+		baos.flush();
+		baos.close();
 		//Returns the given node as an array of bytes
 		return stream;
 	}
@@ -288,12 +291,15 @@ public class BTree implements Serializable {
 	private static BTreeNode deserialize(byte[] byteArray) throws ClassNotFoundException, IOException {
 		//Creates a ByteArrayInputStream to make the given byte array readable
 		ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-
+		
 		//Creates an ObjectInputStream to read the ByteArrayInputStream
 		ObjectInputStream ois = new ObjectInputStream(bais);
-
+		
 		//Reads the given byteArray'd BTreeNode and converts it back into a BTreeNode
-		return (BTreeNode) ois.readObject();
+		BTreeNode tmp = (BTreeNode) ois.readObject();
+		ois.close();
+		bais.close();
+		return tmp;
 	}
 	
 	public static int getOptimalDegree() {
@@ -326,7 +332,7 @@ public class BTree implements Serializable {
 
 		//Writes the byte array to the RandomAccessFile
 		raf.write(byteArray);
-
+		
 		//Changes the RandomAccessFile offset position to the next length of the BTreeNode
 		//rafOffset += maxBTreeNodeSize;
 	}
