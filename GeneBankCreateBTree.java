@@ -45,10 +45,7 @@ public class GeneBankCreateBTree {
 		}catch(Exception e) {
 			correctOutput();				
 		}
-		
-		if (degree == 0) {
-			// there should be a call to optimum degree -- this should maybe happen in a separate class
-		}
+	
 		
 		try {
 			createBTree();
