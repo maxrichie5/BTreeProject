@@ -8,7 +8,7 @@ public class GeneBankCreateBTree {
 	static private int degree = 0;
 	static private int sequenceLength = 0;
 	static private int cacheSizeCreate = 0;
-	static private int debug = 0;
+	static private int debug = 2;
 	
 	public static void main(String[] args) {
 
@@ -33,6 +33,9 @@ public class GeneBankCreateBTree {
 			if (args.length > 4 && !cacheCreate) {
 				debug = Integer.valueOf(args[4]);	
 			}
+			if (args.length > 5 && !cacheCreate) {
+				correctOutput();
+			}
 			if (args.length > 4 && args.length < 6 && cacheCreate) {
 				cacheSizeCreate = Integer.valueOf(args[4]);	
 			}
@@ -43,7 +46,7 @@ public class GeneBankCreateBTree {
 			if(args.length > 5 && !cacheCreate) {
 				correctOutput();
 			}
-			if (debug != 0 && debug != 1) {
+			if ((debug != 0 && debug != 1) || debug == 2) {
 				debug = 1;
 			}
 			
