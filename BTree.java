@@ -79,7 +79,7 @@ public class BTree implements Serializable {
 		while(!foundRoot) {
 			root = diskRead(i*maxBTreeNodeSize);
 			foundRoot = root.isRoot();
-			i++;
+			i = root.getParentIndex();
 		}
 		currentNode = root;
 	}

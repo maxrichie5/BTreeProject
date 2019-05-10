@@ -114,10 +114,12 @@ static private Boolean cacheSearch = false;
 			}
 			long key = gc.convertStringToLong(queryString);
 			int frequency = bt.search(key);
-			if(debugLevelSearch == 1) { //make query dump
-				bw.write(queryString+": "+frequency+"\n");
-			} else { //print query result to stdout
-				System.out.println(queryString+": "+frequency);
+			if(frequency != 0) {
+				if(debugLevelSearch == 1) { //make query dump
+					bw.write(queryString+": "+frequency+"\n");
+				} else { //print query result to stdout
+					System.out.println(queryString+": "+frequency);
+				}
 			}
 		}		
 		if(bw != null) {
