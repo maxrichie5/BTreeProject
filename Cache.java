@@ -167,4 +167,9 @@ public class Cache<BTreeNode> implements Serializable {
 	public String toString() {
 		return list.toString();
 	}
+
+	public void add(BTreeNode cacheNode, int index) {
+		list.add(index, cacheNode);
+		
+	}
 }
