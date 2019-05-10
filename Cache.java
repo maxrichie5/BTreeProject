@@ -48,7 +48,7 @@ public class Cache<BTreeNode> implements Serializable {
 	}
 
 	/**
-	 * Looks for BTreeNode in cache and returns it if found.
+	 * Looks for BTreeNode in cache and returns+removes it if found.
 	 * 
 	 * @param element
 	 *            node to find
@@ -62,7 +62,7 @@ public class Cache<BTreeNode> implements Serializable {
 	}
 	
 	/**
-	 * Looks for BTreeNode in cache and returns it if found.
+	 * Looks for BTreeNode in cache and returns+removes it if found.
 	 * 
 	 * @param index
 	 *            node to find
@@ -98,22 +98,6 @@ public class Cache<BTreeNode> implements Serializable {
 	 */
 	public boolean isFull() {
 		return size() == MAX_SIZE;
-	}
-
-	/**
-	 * Removes the chosen element out of the list
-	 * 
-	 * @param element
-	 * @return the element removed
-	 */
-	public BTreeNode remove(BTreeNode element) {
-		int idx = list.indexOf(element);
-		if (idx < 0) {
-			throw new NoSuchElementException();
-		}
-		BTreeNode t = list.get(idx);
-		list.remove(t);
-		return t;
 	}
 
 	/**
