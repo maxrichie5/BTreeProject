@@ -22,9 +22,9 @@ public class BTree implements Serializable {
 	private static int maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
 	private static int optimal = 4096;
 	private static final long serialVersionUID = 1L;
-	
-    private static final int intMetadata = 4;
-    private static final int booleanMetadata = 4;
+
+	private static final int intMetadata = 4;
+	private static final int booleanMetadata = 4;
 
 	public BTree(int sequenceLength, int cacheSize, int degree, int debugLevel, String gbkFileName) throws IOException {
 		if (degree == 0) {
@@ -37,7 +37,7 @@ public class BTree implements Serializable {
 		} 
 		nodeCount = 1;
 		maxBTreeNodeSize = findGoodSize(this.degree);
-		
+
 		String btreeFileName = gbkFileName+".btree.data."+sequenceLength+"."+this.degree;
 		File file = new File(btreeFileName);
 		if(!file.exists()) { 
@@ -56,12 +56,12 @@ public class BTree implements Serializable {
 		root = new BTreeNode(this.degree, true, true, 0);
 		diskWrite(root, root.getOffset());
 	}
-	
+
 	public BTree(String btreeFileName, int debugLevel, int cacheSize) throws ClassNotFoundException, IOException {
 		String[] sa = btreeFileName.split("\\."); //split the file name by .'s
 		degree = Integer.parseInt(sa[5]); //get degree
 		maxBTreeNodeSize = findGoodSize(degree);
-		
+
 		File file = new File(btreeFileName);
 		try {
 			raf = new RandomAccessFile(btreeFileName, "rw");
@@ -72,7 +72,7 @@ public class BTree implements Serializable {
 		root = diskRead(0);
 		currentNode = root;
 	}
-	
+
 	public void finish() throws IOException {
 		nodeWrite(root);
 		if(cache != null) 
@@ -138,7 +138,7 @@ public class BTree implements Serializable {
 			index--;
 		}
 		parentNode.addKey(child.removeKey(degree-1), index+1);
-		
+
 		//write the nodes
 		nodeWrite(parentNode);
 		nodeWrite(child);
@@ -148,7 +148,7 @@ public class BTree implements Serializable {
 	private void insertNonFull(TreeObject to) throws IOException, ClassNotFoundException {
 		Long key = to.getKey();
 		currentNode = root;
-		
+
 		while (true)
 		{
 			int index = currentNode.getNumKeys() - 1;
@@ -182,14 +182,14 @@ public class BTree implements Serializable {
 					index--;
 				} //end while (index >= 0 && Long.compare(key, currentNode.keys.get(index).getKey()) <= 0)
 				index++;
-				
+
 				if(index >= currentNode.getNumChildren()) {
 					currentNode.addKey(to, index);
 					nodeWrite(currentNode);
 					return;
 				}
 				nextNode = diskRead(currentNode.getChild(index)*maxBTreeNodeSize);
-				
+
 				if (nextNode.isFull())
 				{			
 					if(Long.compare(key, nextNode.getKey(degree/2).getKey()) == 0) 
@@ -208,7 +208,7 @@ public class BTree implements Serializable {
 			} //end else for if (currentNode.isLeaf()) 
 		} //end while true
 	} //end insert non full
-	
+
 	/**
 	 * Return a good maxBTreeNodeSize
 	 * @param degree
@@ -233,14 +233,14 @@ public class BTree implements Serializable {
 
 		//Creates an ObjectOutputStream
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		
+
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-		
+
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
 		oos.close();
-		
+
 		//Returns the given node as an array of bytes
 		return stream;
 	}
@@ -255,21 +255,21 @@ public class BTree implements Serializable {
 	private static BTreeNode deserialize(byte[] byteArray) throws ClassNotFoundException, IOException {
 		//Creates a ByteArrayInputStream to make the given byte array readable
 		ByteArrayInputStream bais = new ByteArrayInputStream(byteArray);
-		
+
 		//Creates an ObjectInputStream to read the ByteArrayInputStream
 		ObjectInputStream ois = new ObjectInputStream(bais);
-		
+
 		//Reads the given byteArray'd BTreeNode and converts it back into a BTreeNode
 		BTreeNode tmp = (BTreeNode) ois.readObject();
 		ois.close();
 		return tmp;
 	}
-	
+
 	public static int getOptimalDegree() {
-		
-        int metadata = (intMetadata * 4) + (booleanMetadata * 2);
-        int totalSize = 30;
-        int pointerSize = 4;
+
+		int metadata = (intMetadata * 4) + (booleanMetadata * 2);
+		int totalSize = 30;
+		int pointerSize = 4;
 
 		optimal -= metadata;
 		optimal += totalSize;
@@ -305,7 +305,7 @@ public class BTree implements Serializable {
 	 * @throws IOException
 	 */
 	public static BTreeNode diskRead(long position) throws ClassNotFoundException, IOException {
-		
+
 		BTreeNode checkCache = null;
 		if (cache != null) { 
 			for (int i = 0; i < cache.size()-1; i++) { //Searching cache for BTreeNode
@@ -320,7 +320,7 @@ public class BTree implements Serializable {
 		if (checkCache != null) { //Found node, don't read from disk
 			return checkCache;
 		}
-		
+
 		//Creates byte array to be read to
 		byte[] byteArray = new byte[maxBTreeNodeSize];
 
@@ -339,7 +339,7 @@ public class BTree implements Serializable {
 		//Returns the node place holder
 		return copyNode;
 	}
-	
+
 	/**
 	 * Writes all the contents of the cache to update everything at the end
 	 * 
@@ -351,7 +351,7 @@ public class BTree implements Serializable {
 			diskWrite(node, node.getOffset());
 		}
 	}
-	
+
 	/**
 	 * Adds node to the cache, if cache is full then it will return the last element
 	 * in cache and write
@@ -372,7 +372,7 @@ public class BTree implements Serializable {
 		}
 
 	}
-	
+
 	/**
 	 * Creates a dump file that contains an in-order traversal of the btree 
 	 * and prints out each tree object as DNA String: Frequency
@@ -381,68 +381,69 @@ public class BTree implements Serializable {
 	 * @throws ClassNotFoundException 
 	 */
 	public void makeDump() throws InterruptedException, IOException, ClassNotFoundException {
-		
-		
-        boolean traverse = true;
-        // have to traverse  the tree
+		FileOutputStream outFileStream = new FileOutputStream(new File("dump"));
+		PrintWriter bw = new PrintWriter(outFileStream);
+
+		boolean traverse = true;
+		// have to traverse  the tree
 		currentNode = root;
-	    Stack<Integer> children = new Stack<>(); // 
-	    Stack<Integer> treeNodes = new Stack<>();
-	    FileOutputStream outFileStream = new FileOutputStream(new File("dump"));
-        PrintWriter bw = new PrintWriter(outFileStream);
-        int childIndex = 0;
-        
-        while (traverse)
-        {
-            if (childIndex == currentNode.getNumChildren() && !currentNode.isLeaf())
-            {
-                if (treeNodes.isEmpty() && children.isEmpty()) // done going thru
-                {
-                    traverse = false;
-                    continue;
-                }
-                else
-                {
-                    currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize); // parameter might need modifying
-                    childIndex = children.pop();
+		Stack<Integer> children = new Stack<>();
+		Stack<Integer> treeNodes = new Stack<>();
 
-                    if (childIndex < currentNode.getNumKeys())
-                    {
-                        bw.write(currentNode.getKey(childIndex).toString()+"\n");
-                    }
-                    childIndex++;
-                    continue;
-                }
-            }
 
-            if (currentNode.isLeaf())
-            {
-                for (int i = 0; i < currentNode.getNumKeys() ; i++)
-                {
-                    bw.write(currentNode.getKey(i).toString()+"\n");
-                }
+		int childIndex = 0;
 
-                if (currentNode == root) {
-                	break;
-                }
-                currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize);
-                childIndex = children.pop();
+		while (traverse)
+		{
+			if (childIndex == currentNode.getNumChildren() && !currentNode.isLeaf())
+			{
+				if (treeNodes.isEmpty() && children.isEmpty()) // done going thru
+				{
+					traverse = false;
+					continue;
+				}
+				else
+				{
+					currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize); // parameter might need modifying
+					childIndex = children.pop();
 
-                if (childIndex < currentNode.getNumKeys())
-                {
-                   bw.write(currentNode.getKey(childIndex).toString()+"\n");
-                }
-                childIndex++;
-            }
-            else
-            {
-                treeNodes.push(currentNode.getIndex());
-                children.push(childIndex);
-                currentNode = diskRead(currentNode.getChild(childIndex)*maxBTreeNodeSize);
-                childIndex = 0;
-            }
-        }
-        bw.close();
+					if (childIndex < currentNode.getNumKeys())
+					{
+						bw.write(currentNode.getKey(childIndex).toString()+"\n");
+					}
+					childIndex++;
+					continue;
+				}
+			}
+
+			if (currentNode.isLeaf())
+			{
+				for (int i = 0; i < currentNode.getNumKeys() ; i++)
+				{
+					bw.write(currentNode.getKey(i).toString()+"\n");
+				}
+
+				if (currentNode == root) {
+					break;
+				}
+				currentNode = diskRead(treeNodes.pop()*maxBTreeNodeSize);
+				childIndex = children.pop();
+
+				if (childIndex < currentNode.getNumKeys())
+				{
+					bw.write(currentNode.getKey(childIndex).toString()+"\n");
+				}
+				childIndex++;
+			}
+			else
+			{
+				treeNodes.push(currentNode.getIndex());
+				children.push(childIndex);
+				currentNode = diskRead(currentNode.getChild(childIndex)*maxBTreeNodeSize);
+				childIndex = 0;
+			}
+		}
+		bw.close();
 	}
 
 	/**
@@ -496,7 +497,7 @@ public class BTree implements Serializable {
 		public int getNumKeys() {
 			return numKeys;
 		}
-		
+
 		/**
 		 * 
 		 * @return Number of children in this BTreeNode
@@ -514,7 +515,7 @@ public class BTree implements Serializable {
 			return index;
 		}
 
-		
+
 
 		/**
 		 * Gets the key of TreeObject for that index
@@ -527,7 +528,7 @@ public class BTree implements Serializable {
 			return keys[index];
 		}
 
-		
+
 
 		/**
 		 * Removes the key at index
@@ -576,7 +577,7 @@ public class BTree implements Serializable {
 			numKeys++;
 		}
 
-		
+
 
 		/**
 		 * Adds a child to the given index
