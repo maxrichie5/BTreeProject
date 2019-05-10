@@ -308,7 +308,7 @@ public class BTree implements Serializable {
 
 		BTreeNode checkCache = null;
 		if (cache != null) { 
-			for (int i = 0; i < cache.size()-1; i++) { //Searching cache for BTreeNode
+			for (int i = 0; i < cache.size(); i++) { //Searching cache for BTreeNode
 				BTreeNode cacheNode = (BTreeNode) cache.get(i);
 				if ((cacheNode.getOffset() == position)) {
 					checkCache = cacheNode;		
