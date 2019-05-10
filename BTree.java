@@ -1,10 +1,8 @@
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,7 +14,7 @@ import java.util.Stack;
 public class BTree implements Serializable {
 
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree  
-	private static Cache cache = null;
+	private static Cache<BTreeNode> cache = null;
 	private int  degree, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
@@ -61,15 +59,23 @@ public class BTree implements Serializable {
 		String[] sa = btreeFileName.split("\\."); //split the file name by .'s
 		degree = Integer.parseInt(sa[5]); //get degree
 		maxBTreeNodeSize = findGoodSize(degree);
-
+		
+		//make a raf
 		File file = new File(btreeFileName);
 		try {
 			raf = new RandomAccessFile(btreeFileName, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-
-		root = diskRead(0);
+		
+		//find the root node
+		boolean foundRoot = false;
+		int i = 0;
+		while(!foundRoot) {
+			root = diskRead(i*maxBTreeNodeSize);
+			foundRoot = root.isRoot();
+			i++;
+		}
 		currentNode = root;
 	}
 
@@ -233,13 +239,12 @@ public class BTree implements Serializable {
 
 		//Creates an ObjectOutputStream
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-
+		oos.flush();
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-
+		oos.close();
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
-		oos.close();
 
 		//Returns the given node as an array of bytes
 		return stream;
@@ -641,6 +646,13 @@ public class BTree implements Serializable {
 		 */
 		public void setRoot(boolean isRoot) {
 			this.isRoot = isRoot;
+		}
+		
+		/**
+		 * Return if the node is the root
+		 */
+		public boolean isRoot() {
+			return this.isRoot;
 		}
 
 		/**
