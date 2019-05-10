@@ -122,6 +122,7 @@ public class GeneBankCreateBTree {
 				btree.makeDump();
 			} catch (Exception e) {
 				e.printStackTrace();
+				System.exit(0);
 			}
 		}
 	}
