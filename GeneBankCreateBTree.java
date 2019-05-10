@@ -33,7 +33,7 @@ public class GeneBankCreateBTree {
 			if (args.length > 4 && !cacheCreate) {
 				debug = Integer.valueOf(args[4]);	
 			}
-			if (args.length > 4 && cacheCreate) {
+			if (args.length > 4 && args.length < 6 && cacheCreate) {
 				cacheSizeCreate = Integer.valueOf(args[4]);	
 			}
 			if(args.length > 5 && cacheCreate) {
@@ -42,6 +42,9 @@ public class GeneBankCreateBTree {
 			}
 			if(args.length > 5 && !cacheCreate) {
 				correctOutput();
+			}
+			if (debug != 0 && debug != 1) {
+				debug = 1;
 			}
 			
 			
