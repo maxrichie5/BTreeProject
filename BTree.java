@@ -1,10 +1,8 @@
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -16,7 +14,7 @@ import java.util.Stack;
 public class BTree implements Serializable {
 
 	private BTreeNode root, currentNode, nextNode; //The root, current, next node in this BTree  
-	private static Cache cache = null;
+	private static Cache<BTreeNode> cache = null;
 	private int  degree, nodeCount;
 	private static RandomAccessFile raf; //The file we are writing to and reading from
 	private static int maxBTreeNodeSize = 0; //The largest expected size in bytes of a BTree Node
