@@ -385,7 +385,7 @@ public class BTree implements Serializable {
 		currentNode = root;
 	    Stack<Integer> children = new Stack<>(); // 
 	    Stack<Integer> treeNodes = new Stack<>();
-	    FileOutputStream outFileStream = new FileOutputStream(new File("dump.txt"));
+	    FileOutputStream outFileStream = new FileOutputStream(new File("dump"));
         PrintWriter bw = new PrintWriter(outFileStream);
         int childIndex = 0;
         
