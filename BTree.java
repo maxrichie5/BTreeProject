@@ -62,14 +62,22 @@ public class BTree implements Serializable {
 		degree = Integer.parseInt(sa[5]); //get degree
 		maxBTreeNodeSize = findGoodSize(degree);
 		
+		//make a raf
 		File file = new File(btreeFileName);
 		try {
 			raf = new RandomAccessFile(btreeFileName, "rw");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-
-		root = diskRead(0);
+		
+		//find the root node
+		boolean foundRoot = false;
+		int i = 0;
+		while(!foundRoot) {
+			root = diskRead(i*maxBTreeNodeSize);
+			foundRoot = root.isRoot();
+			i++;
+		}
 		currentNode = root;
 	}
 	
@@ -233,13 +241,12 @@ public class BTree implements Serializable {
 
 		//Creates an ObjectOutputStream
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
-		
+		oos.flush();
 		//Writes the object to by converted into a byte array by the baos
 		oos.writeObject(node);
-		
+		oos.close();
 		//Converts the written object into a byte array stored in stream
 		stream = baos.toByteArray();
-		oos.close();
 		
 		//Returns the given node as an array of bytes
 		return stream;
@@ -345,7 +352,7 @@ public class BTree implements Serializable {
 	public void writeCache() throws IOException {
 		for (int i = cache.size(); i > 0; i--) { //Goes through whole cache and writes and updates disk
 			BTreeNode node = (BTreeNode) cache.removeLast();
-			nodeWrite(node);
+			diskWrite(node, node.getOffset());
 		}
 	}
 	
@@ -637,6 +644,13 @@ public class BTree implements Serializable {
 		 */
 		public void setRoot(boolean isRoot) {
 			this.isRoot = isRoot;
+		}
+		
+		/**
+		 * Return if the node is the root
+		 */
+		public boolean isRoot() {
+			return this.isRoot;
 		}
 
 		/**
