@@ -60,6 +60,11 @@ public class BTree implements Serializable {
 		degree = Integer.parseInt(sa[5]); //get degree
 		maxBTreeNodeSize = findGoodSize(degree);
 		
+		//make cache
+		if(cacheSize != 0) {
+			cache = new Cache<BTreeNode>(cacheSize);
+		}
+		
 		//make a raf
 		File file = new File(btreeFileName);
 		try {
@@ -84,8 +89,16 @@ public class BTree implements Serializable {
 		if(cache != null) 
 			writeCache();
 	}
-
+	
 	public int search(long key) throws ClassNotFoundException, IOException {
+		if(cache != null) {
+			return searchWithCache(key);
+		} else {
+			return searchNoCache(key);
+		}
+	}
+
+	public int searchNoCache(long key) throws ClassNotFoundException, IOException {
 		currentNode = root;
 		while (true) {
 			int i = 0;
@@ -103,6 +116,52 @@ public class BTree implements Serializable {
 			} else {
 				currentNode = diskRead(currentNode.getChild(i)*maxBTreeNodeSize);
 			}
+		}
+	}
+	
+	public int searchWithCache(long key) throws ClassNotFoundException, IOException {
+		//check cache first
+		TreeObject cacheReturn = searchCache(key);
+		if(cacheReturn != null) {
+			return cacheReturn.getFreq();
+		}
+		
+		currentNode = root;
+		while (true) {
+			int i = 0;
+			while (i < currentNode.getNumKeys() && Long.compare(key, currentNode.getKey(i).getKey()) > 0){
+				i++;
+			}
+
+			if (i < currentNode.getNumKeys() && Long.compare(key, currentNode.getKey(i).getKey()) == 0)
+			{
+				cache.add(currentNode);
+				return currentNode.getKey(i).getFreq();
+			}
+
+			if (currentNode.isLeaf()) {
+				return 0;
+			} else {
+				currentNode = diskRead(currentNode.getChild(i)*maxBTreeNodeSize);
+			}
+		}
+	}
+	
+	public TreeObject searchCache(long key) {
+		if(cache != null) { //there is a cache
+			for (int i = 0; i < cache.size(); i++) { //Searching cache for BTreeNode
+				BTreeNode cacheNode = (BTreeNode) cache.get(i);
+				for(int j = 0; j < cacheNode.getNumKeys(); j++) {
+					if(cacheNode.getKey(j).getKey() == key) {
+						cache.add(cacheNode, i); //key was found, add node back to original place
+						return cacheNode.getKey(j); //return TreeObject
+					} //end if
+				} //end for
+				cache.add(cacheNode, i); //key was not found, add node back to original place
+			}
+			return null;
+		} else { //no cache
+			return null;
 		}
 	}
 
