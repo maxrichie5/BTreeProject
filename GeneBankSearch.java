@@ -10,7 +10,7 @@ static private Boolean cacheSearch = false;
 	static private String bTreeFile = "";
 	static private String queryFile = "";
 	static private int cacheSizeSearch = 0;
-	static private int debugLevelSearch = 0;
+	static private int debugLevelSearch = 2;
 	
 	public static void main(String[] args) {
 
@@ -46,6 +46,9 @@ static private Boolean cacheSearch = false;
 			}catch(Exception e) {
 				correctOutput();				
 			}
+		}
+		if (debugLevelSearch != 0 && debugLevelSearch != 1) {
+			debugLevelSearch = 0;
 		}
 		
 		try {
