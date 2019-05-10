@@ -171,6 +171,7 @@ public class BTree implements Serializable {
 			root = new BTreeNode(degree, true, false, ++nodeCount); //make newParent the root
 			diskWrite(root, root.getOffset());
 			root.addChild(nextNode.getIndex(), 0);
+			nextNode.setParentIndex(root.getIndex());
 			nextNode.setRoot(false);
 
 			split(root, 0, nextNode); 
@@ -196,6 +197,7 @@ public class BTree implements Serializable {
 		}
 
 		parentNode.addChild(newNode.getIndex(), childIndex+1); //add newNode after child in parent's list of children
+		newNode.setParentIndex(parentNode.getIndex());
 		int index = parentNode.getNumKeys()-1;
 		long key = child.getKey(degree-1).getKey();
 		while (index >= 0 && Long.compare(key, parentNode.getKey(index).getKey()) <= 0)
@@ -523,7 +525,7 @@ public class BTree implements Serializable {
 		private boolean isLeaf,isRoot; // boolean to keep track of this node being a leaf/root
 		private int numKeys; // number of keys in this node
 		private int numChildren;
-		private int index; // index for parent and this node
+		private int index, parentIndex; // index for parent and this node
 		private int degree; // b tree degree
 		private static final long serialVersionUID = 1L;
 
@@ -722,6 +724,25 @@ public class BTree implements Serializable {
 		}
 
 
+		
+		/**
+		 * Gets the index of parent
+		 * 
+		 * @return Parent Index
+		 */
+		public int getParentIndex() {
+			return parentIndex;
+		}
+
+		/**
+		 * Sets the index of parent
+		 * 
+		 * @param parent
+		 */
+		public void setParentIndex(int parentIndex) {
+			this.parentIndex = parentIndex;
+		}
+		
 		@Override
 		public String toString() {
 			String btnstr = "";
