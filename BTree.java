@@ -309,8 +309,11 @@ public class BTree implements Serializable {
 		BTreeNode checkCache = null;
 		if (cache != null) { 
 			for (int i = 0; i < cache.size()-1; i++) { //Searching cache for BTreeNode
-				if (((BTreeNode) cache.get(i)).getOffset() == position) {
-					checkCache = (BTreeNode) cache.get(i);		
+				BTreeNode cacheNode = (BTreeNode) cache.get(i);
+				if ((cacheNode.getOffset() == position)) {
+					checkCache = cacheNode;		
+				} else {
+					cache.add(cacheNode, i);
 				}
 			}
 		}
@@ -345,7 +348,7 @@ public class BTree implements Serializable {
 	public void writeCache() throws IOException {
 		for (int i = cache.size(); i > 0; i--) { //Goes through whole cache and writes and updates disk
 			BTreeNode node = (BTreeNode) cache.removeLast();
-			nodeWrite(node);
+			diskWrite(node, node.getOffset());
 		}
 	}
 	
